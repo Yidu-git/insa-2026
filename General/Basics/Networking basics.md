@@ -66,7 +66,6 @@ A **Wide Area Network** covers large geographical areas such as countries or con
 Examples:
 - Satellite links
 - Internet
-
 ## **IP (Internet protocol)**
 **Classful IP addressing** was an early method used to assign IP addresses and divide the *IPv4* addresses space into fixed classes. Each IP address was categorized on its leading bits and the class determined its network and host portions. Due to inefficient address utilization, this method was later replaced by CIDR, which uses flexible prefixes instead of fixed classes.
 
