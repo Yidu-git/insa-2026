@@ -56,7 +56,7 @@ Examples:
 
 ### 4. Metropolitan Area Network (MAN)
 A **Metropolitan Area Network** connects multiple networks in a metropolitan region(*city*). Its most commonly used to provide high-speed connectivity across a city.
-Examples"
+Examples:
 - City-wide ISP network
 - Metro Ethernet
 - Fiber Optics
@@ -71,3 +71,5 @@ Examples:
 
 ---
 
+# MAC Address
+A **Media Access Control** address is an ad
