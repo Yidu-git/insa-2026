@@ -20,8 +20,7 @@ Hint: “Even simple pings can carry secrets inside them. Don’t just look at t
 
 ## Flag 1
 Flag 1 contains a simple flag (`FLAG{http_easy_capture}`), this flag shows up when filtering through the packets captured with `http`.
-![[Screenshot 2026-03-29 084047.png]]
-
+![Screenshot1](../Images/Screenshot 2026-03-29 084047.png)
 ## Flag 2
 by using the filter `ip.src == 192.168.0.115 && frame contains "FLAG"` we get the flag `FLAG_dns_exfiltration_.example.com`
 
