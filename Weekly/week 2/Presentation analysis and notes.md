@@ -8,9 +8,6 @@
 - `htop` : CLI task manager
 	- exit : F9
 # To research
-- Internal BASE64 Decoding
-- Proton, Telegram and Signal protocols
-- Revise RSA encryption
 - Analyze : 
 ```shell
  cat challenge1.txt | grep -oE 'FLAG{[a-zA-Z0-9_]+}' | sort -u | wc -l
