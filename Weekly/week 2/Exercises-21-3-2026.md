@@ -1,4 +1,4 @@
-- [ ] Advanced python scripting
+- [x] Advanced python scripting
 - [ ] TOP 30 Ports
 - [ ] OSI application layer + Attack
 - [ ] Class D&E
