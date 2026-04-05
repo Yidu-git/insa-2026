@@ -372,7 +372,7 @@ sudo nmap -sS -f -T1 --source-port 53 -D RND:5 target
 
 ## Related Notes
 
-- [[OSI Model]]
+- [[OSI]]
 - [[TCP-IP Protocol Suite]]
 - [[Firewall & IDS Concepts]]
 - [[Penetration Testing Methodology]]
