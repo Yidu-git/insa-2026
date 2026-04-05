@@ -16,7 +16,9 @@
 
 # Intro
 This note contains notes on Nmap and its uses. Nmap is a commonly used tool in cybersecurity to discover networks and security auditing.
-++
+
+# Side notes
+- Nmap scans 1000 most common ports by default (equivalent to using the flag `--top-ports 1000`)
 
 ---
 
