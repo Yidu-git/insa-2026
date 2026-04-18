@@ -25,5 +25,6 @@ To search through logs in windows event viewer, we can find specific text with t
 - `tcpdump`
 - `terminalshark` / T-Shark
 - `nmap`
+- cve
 
 12/8/2020

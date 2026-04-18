@@ -1,0 +1,45 @@
+- [ ] Introduction to Cybersecurity
+- [ ] CIA Triad
+- [x] Blue Team Vs Red Team vs GRC
+- [x] Ethical Boundaries
+- [x] Linux Basics
+- [x] Linux Vs Windows
+- [x] Major Principles of Linux System
+- [x] Linux File System Structure
+- [x] Basic Commands
+- [x] ls, cd, pwd, mkdir, rm, cat, echo, touch, cp, mv
+- [x] grep, find, chmod, chown, chgrp, ps, top, sudo
+- [x] Basic Text Editors used in kali linux
+- [x] Linux Permissions
+- [x] Networking Basics
+- [ ] OSI Model
+- [ ] Attacks on each layer of the OSI model
+- [x] What is IP?
+- [x] IP Classes
+- [ ] Public Vs Private IP
+- [ ] IPv4 vs IPv6
+- [x] Ports
+- [x] Top common ports used
+- [x] Subnetting
+- [x] TCP vs UDP
+- [ ] Network Traffic Analysis
+- [ ] What is a Packet?
+- [ ] TCP Handshake
+- [ ] DNS
+- [ ] Using Wireshark
+- [ ] Windows Investigation
+- [ ] Ipconfig
+- [ ] netstat
+- [ ] tasklist
+- [ ] services
+- [ ] Event Viewer Basics
+- [ ] Nmap Basics
+- [ ] What nmap is, its use
+- [ ] Layers which are involved with nmap scanning
+- [ ] Nmap Scan types
+- [ ] Stealth vs speed
+- [ ] Nmap Scripting Engine
+- [ ] Common Flags used on scanning a target
+- [ ] -sn, -p, -p-, -sT, -sS -sU, -sV, -O, -A, -T0-5, -oN, -oX, -oG, -oA, --script ……….
+- [ ] Analysis of nmap Output
+- [ ] Firewall evasion techniques
