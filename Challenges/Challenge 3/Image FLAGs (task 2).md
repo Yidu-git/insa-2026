@@ -26,7 +26,7 @@ Output: **`FLAG{appended_zip}`**
 ## Flag 4
 Through brute forcing with the default `rockyou.txt` provided in Kali Linux and the **`stegseek`** tool, the password can be brute forced.
 ```shell
-steghide extract -sf challenge.jpg -wl rockyou.txt
+stegseek extract -sf challenge.jpg -wl rockyou.txt
 ```
 
 The password found is "password123" and the extracted file is "flag5.txt" that is stored in `challenge.jpg.out` which contains `FLAG{steghide_protected}`.
