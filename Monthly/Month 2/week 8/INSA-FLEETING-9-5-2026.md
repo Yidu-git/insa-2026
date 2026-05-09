@@ -100,6 +100,11 @@ SELECT * FROM users WHERE username = 'jhon' OR 1=1 -- 'AND password = 'jhon@2001
 ### Prevention
 - User input sanitization (ex **regex** filters)
 - 
+#### Principles
+- Always assume user input is dirty
+- Always sanitize user input
+- Never allow users to have access to inputs that they don't need
+
 ## XSS
 - DOM
 - Reflected
