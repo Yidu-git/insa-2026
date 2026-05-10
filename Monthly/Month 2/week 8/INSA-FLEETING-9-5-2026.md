@@ -94,6 +94,9 @@ SELECT * FROM users WHERE username = 'jhon' OR 1=1 -- 'AND password = 'jhon@2001
  - where to check for SQLI
  - Detection
  - Exploitation
+
+2nd order SQLI
+
 ### Tools
 - SQL map
 
