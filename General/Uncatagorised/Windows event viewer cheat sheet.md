@@ -1,5 +1,13 @@
+---
+tags:
+  - WindowsEventViewer
+  - NonView
+---
+#WindowsEventViewer #NonView
 https://gist.github.com/githubfoam/69eee155e4edafb2e679fb6ac5ea47d0
 
+
+```
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # PS : ChatGPT makes mistakes, consider "trust but verify" principle
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1380,3 +1388,4 @@ Event ID 15: Credential Guard is configured but the secure kernel is not running
 Event ID 16: Credential Guard failed to launch.
 Event ID 17: Error reading Credential Guard (LsaIso.exe) UEFI configuration
 --------------------------------------------------------------------------------------
+```

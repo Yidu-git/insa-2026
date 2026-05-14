@@ -96,7 +96,9 @@ SELECT * FROM users WHERE username = 'jhon' OR 1=1 -- 'AND password = 'jhon@2001
  - Exploitation
 
 2nd order SQLI
+error based SQLI
 
+SQL Lite has SQL master table
 ### Tools
 - SQL map
 
