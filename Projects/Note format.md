@@ -4,13 +4,13 @@ Here is a clean, practical template for **Project Notes & Plans**. You can use t
 
 # Project Template: [Project Name]
 
-| Field | Details |
-|-------|---------|
-| **Project Lead** | [Name] |
-| **Start Date** | [YYYY-MM-DD] |
-| **Target End Date** | [YYYY-MM-DD] |
-| **Current Status** | 🔵 Not Started / 🟡 In Progress / 🟢 On Hold / ✅ Completed |
-| **Priority** | High / Medium / Low |
+| Field               | Details                                                    |
+| ------------------- | ---------------------------------------------------------- |
+| **Project Lead**    | [Name]                                                     |
+| **Start Date**      | [YYYY-MM-DD]                                               |
+| **Target End Date** | [YYYY-MM-DD]                                               |
+| **Current Status**  | 🔵 Not Started / 🟡 In Progress / 🟢 On Hold / ✅ Completed |
+| **Priority**        | High / Medium / Low                                        |
 
 ---
 

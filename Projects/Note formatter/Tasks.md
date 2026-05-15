@@ -24,26 +24,6 @@ kanban-plugin: board
 - [ ] Start project
 
 
-## Study week
-
-- [ ] - [ ] **Physics**
-	- [ ] **Biology**
-		- [ ] Unit 9
-		- [ ] Unit 10
-	- [ ] **Chemistry**
-		- [ ] Unit 9
-		- [ ] Unit 10
-		- [ ] Unit 11
-		- [ ] Unit 12
-	- [ ] **CS**
-	- [ ] *Geography*
-	- [ ] *Mathematics*
-	- [ ] *Civics*
-	- [ ] *English*
-	- [ ] Amharic
-	- [ ] GP
-
-
 ***
 
 ## Archive
@@ -53,6 +33,6 @@ kanban-plugin: board
 
 %% kanban:settings
 ```
-{"kanban-plugin":"board","list-collapse":[false,false,false,false],"new-line-trigger":"enter"}
+{"kanban-plugin":"board","list-collapse":[false,false,false],"new-line-trigger":"enter"}
 ```
 %%
