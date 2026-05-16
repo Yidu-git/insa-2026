@@ -1,4 +1,4 @@
-# intercepting
+# Intercepting
 - `Burpsuite`
 - `Caido`
 - `Zap`
@@ -95,8 +95,11 @@ SELECT * FROM users WHERE username = 'jhon' OR 1=1 -- 'AND password = 'jhon@2001
  - Detection
  - Exploitation
 
-2nd order SQLI
-error based SQLI
+## 2nd order SQLI
+A **second-order SQL injection (2nd-order SQLi)** is an advanced, delayed attack where malicious SQL code is first saved harmlessly in a database, and then executed later when another part of the application reuses that stored data in an unsafe query. [[1](https://medium.com/@pranaypaul1229/second-order-sql-injection-236a12fa820a), [2](https://en.wikipedia.org/wiki/SQL_injection)]
+
+## Error based SQLI
+**Error-based SQL Injection (SQLi)** is an in-band attack technique used to extract data or map a database structure by deliberately causing the database to generate an error message. Instead of directly returning data, the application mistakenly prints verbose error messages containing the results of an injected SQL query. [[1](https://www.acunetix.com/websitesecurity/sql-injection2/), [2](https://bobcares.com/blog/mysql-error-based-extractvalue-function/), [3](https://pentest-tools.com/blog/sql-injection-attacks)]
 
 SQL Lite has SQL master table
 ### Tools
@@ -104,13 +107,14 @@ SQL Lite has SQL master table
 
 ### Prevention
 - User input sanitization (ex **regex** filters)
-- 
+- Dom purify
 #### Principles
 - Always assume user input is dirty
 - Always sanitize user input
 - Never allow users to have access to inputs that they don't need
 
 ## XSS
+Cross-site scripting (XSS) is a web security vulnerability where attackers inject malicious scripts (usually JavaScript) into trusted websites.
 - DOM
 - Reflected
 - Stored
