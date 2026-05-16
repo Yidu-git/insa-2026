@@ -1,3 +1,7 @@
+---
+
+---
+
 Here is a clean, practical template for **Project Notes & Plans**. You can use this in a notebook, a Word/Google Doc, or a tool like Notion, Obsidian, or OneNote.
 
 ---

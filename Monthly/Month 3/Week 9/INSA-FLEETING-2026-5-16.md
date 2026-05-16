@@ -1,0 +1,4 @@
+---
+cssclasses:
+  - jbm-note
+---
