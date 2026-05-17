@@ -10,7 +10,8 @@ Date: 2026-05-16
 | Date                  | 15/5/2026                   |
 | Main attack type      | File upload vulnerability   |
 | Secondary attack type | Remote code execution (RCE) |
-| Tools:                | Burpsuite, NMAP             |
+| Tools:                | Burpsuite, NMAP, FUFF       |
+| Criticality:          | CVE **9.0**-**10.0**        |
 
 ---
 # **RESULTS**

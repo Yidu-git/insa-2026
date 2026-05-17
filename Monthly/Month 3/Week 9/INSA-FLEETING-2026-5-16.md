@@ -153,7 +153,7 @@ Covering :
 - How file handling works
 
 **MIME** Type : meta data
-**Extension** : suffix
+**Extension** : suffix (`.exe`, `.php`, `.js`)
 **Storage Path** : Where the file sits
 ## What is File upload functionality?
 ### Common use cases
