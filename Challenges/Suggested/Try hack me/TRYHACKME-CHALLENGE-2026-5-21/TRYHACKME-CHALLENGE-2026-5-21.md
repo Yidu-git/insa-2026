@@ -3,7 +3,7 @@ cssclasses:
   - jbm-note
 Date: 2026-05-21
 ---
-# ... Challenge
+# Challenge
 
 | **Target**            | *Try hack me machine(room: mrrobot)* |
 | --------------------- | ------------------------------------ |
@@ -32,6 +32,9 @@ Basic PHP reverse shell.
 ---
 ## **Enumeration**
 ### NMAP
+```bash
+sudo nmap -sS -sV 10.80.177.109 -oA nmapscan
+```
 ```
 22/tcp  closed ssh
 80/tcp  closed http
