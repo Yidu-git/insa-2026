@@ -53,12 +53,6 @@ Date: 2026-05-26
 	- *568628e0d993b1973adc718237da6e93*
 
 ---
-# Preparation
----
-## Getting the PHP payload
-...
-
----
 # Initial investigation/enumeration
 ---
 ## **Enumeration**
@@ -164,4 +158,4 @@ An old exploit can be used to run privilege escalation because of the kernel ver
 	```
 5. Navigate to root folder for flag.txt
 
-With that, Alec Trevelyan has been stoped!
+With that, Alec Trevelyan has been stopped!
