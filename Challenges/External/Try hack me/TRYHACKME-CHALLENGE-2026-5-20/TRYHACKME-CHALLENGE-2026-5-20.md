@@ -2,6 +2,8 @@
 cssclasses:
   - jbm-note
 Date: 2026-05-20
+tags:
+  - THMChallenge
 ---
 # File upload Challenge
 

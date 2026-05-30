@@ -2,6 +2,8 @@
 cssclasses:
   - jbm-note
 Date: 2026-05-26
+tags:
+  - THMChallenge
 ---
 # GoldenEye Challenge
 

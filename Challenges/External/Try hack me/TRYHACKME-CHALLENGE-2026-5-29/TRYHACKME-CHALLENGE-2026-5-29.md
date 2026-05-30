@@ -2,13 +2,15 @@
 cssclasses:
   - jbm-note
 Date: 2026-05-29
+tags:
+  - THMChallenge
 ---
 # **CVE** Challenge
 
 | **Target** :LiTarget:            | *Try hack me machine(room: cve202642945)* |
 | -------------------------------- | ----------------------------------------- |
 | Date :LiCalendar:                | 29/5/2026                                 |
-| Main attack type                 | ...                                       |
+| Main attack type                 | NGINX Rift                                |
 | Secondary attack type            | ...                                       |
 | Tools :LiToolCase:               | ...                                       |
 | Criticality :RiAlarmWarningLine: | CVE-2026-42945 **9.2**, **Critical**      |
