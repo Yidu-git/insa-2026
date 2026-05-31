@@ -71,7 +71,7 @@ sudo nmap -sS -sV 10.82.163.247 -oA scans
 ...
 
 ## **Vulnerability scanning**
-Not needed.
+Not needed (story room).
 
 ---
 # Exploiting and  Investigation
