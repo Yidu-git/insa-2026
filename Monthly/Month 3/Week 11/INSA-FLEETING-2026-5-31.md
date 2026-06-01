@@ -18,3 +18,7 @@ JADX is a tool used to analyze and decompile android applications (`.apk`s). It 
 ---
 GenY Motion is a virtual machine service that provides users with the ability to run mobile virtual machines (including the latest versions of android). Although service is most commonly used in pen testing and development, GenY Motion is also used to test and emulate android games.
 
+
+# Android applications
+---
+## Signatures

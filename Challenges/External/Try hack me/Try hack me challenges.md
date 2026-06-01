@@ -19,3 +19,12 @@ dv.paragraph(`| Challenges |
 | --- |
 ${challenges.sort(p => p.Date,'desc').map((file) => `| [[${file.file.name}]] | \n`).join("")}` )
 ```
+
+# Todo
+- [ ] Organize Tags
+- [ ] Add Tags
+	- [ ] Mobile security
+	- [ ] Web security
+	- [ ] Reverse Engineering
+- [!] Add more sections to Dashboard
+- [ ] ...
