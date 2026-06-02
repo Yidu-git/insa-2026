@@ -22,9 +22,9 @@ Date: 2026-05-31
 1. First flag
 	- *F1ag_0n3*
 2. Second flag
-	- *...*
+	- *S3c0nd_F1ag*
 3. Third flag
-	- *...*
+	- *4_overdone_omelets*
 4. Fourth flag
 	- *...*
 5. Fifth flag
@@ -76,4 +76,16 @@ Checking the source code with JADX-GUI reveals the first flag as a string. It is
 The *`FLAG TWO - EXPORTED ACTIVITY`* section contains the text : 
 *There is a way to bypass the main activity and invoke other activities that are exported.*.
 
-This hints at a vulnerability that can be exploited through **`adb`**. Checking the source code
+This hints at a vulnerability that can be exploited through **`adb`**. Checking the `AndroidManifest.xml`, there is an activity called b25lActivity with **exported** set to **true**. Running the activity with ADB shell shows the second flag.
+
+```powershell
+./adb shell am start -n b3nac.injuredandroid/b3nac.injuredandroid.b25lActivity
+```
+
+## Third flag
+The third flag is similar to the first, the flag is contained in a static string with the name `cmVzb3VyY2VzX3lv`. Checking the `string.xml` file reveals the string it leads to, which contains the third flag.
+
+## Fourth flag
+The forth flag can be found after investigating the activity, which also contains an input. This time the flag is encoded in Base64 in `g.java` or the `g` file.
+
+## Fifth
