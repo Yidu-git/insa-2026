@@ -1,7 +1,6 @@
 ---
 cssclasses:
   - jbm-note
-  - underline-headers
 Date: 2026-05-31
 ---
 
@@ -19,32 +18,43 @@ Date: 2026-05-31
 # **RESULTS**
 ---
 ## Flags found
-1. First flag
+1. First flag - Login
 	- *F1ag_0n3*
-2. Second flag
+2. Second flag - Exported activities
 	- *S3c0nd_F1ag*
-3. Third flag
+3. Third flag - Resources
+	- *F1ag_thr33*
+4. Fourth flag -  Login 2
 	- *4_overdone_omelets*
-4. Fourth flag
-	- *...*
-5. Fifth flag
-	- *...*
-6. Sixth flag
-	- *...*
+5. Fifth flag - Exported broadcast receiver
+	- *{F1v3!}*
+6. Sixth flag - Login 3
+	- *{This_Isn't_Where_I_Parked_My_Car}*
 7. Seventh flag
-	- *...*
+	- *S3V3N_11*
+	- *hunter2*
 8. Eighth flag
+	- *C10ud_S3cur1ty_lol*
+9. Ninth flag
+	- *W25pbmUhX2ZsYWdd*
+10. Tenth flag
 	- *...*
-9. ... flag
+11. Eleventh flag
 	- *...*
-10. ... flag
+12. Twelfth flag
 	- *...*
-11. ... flag
+13. Thirteenth flag
 	- *...*
-12. ... flag
+14. Fourteenth flag
 	- *...*
-
-
+15. Fifteenth flag
+	- *...*
+16. Sixteenth flag
+	- *...*
+17. Seventeenth flag
+	- *...*
+18. Eighteenth flag
+	- *...*
 ---
 # Preparation
 ---
@@ -88,4 +98,66 @@ The third flag is similar to the first, the flag is contained in a static string
 ## Fourth flag
 The forth flag can be found after investigating the activity, which also contains an input. This time the flag is encoded in Base64 in `g.java` or the `g` file.
 
-## Fifth
+## Fifth flag
+The fifth flag can be found by opening and closing the page repeatedly. It is intended to work by sending a broadcast repeatedly. It can also be found by inspecting the receiver, the flag is base64 encoded and encrypted however.
+
+Calling the function after restarting the app works:
+```PowerShell
+./adb shell am broadcast -a com.b3nac.injuredandroid.intent.action.CUSTOM_INTENT -n b3nac.injuredandroid/.FlagFiveReceiver
+```
+
+## Sixth flag
+Flag six is another page with an input, the activity compares input with a base64 encoded and encrypted string : `k3FElEG9lnoWbOateGhj5pX6QsXRNJKh///8Jxi8KXW7iDpk2xRxhQ==`. 
+
+The string is decoded with class `k.a()`, this is the same class that is used to decode the forth flag, Further exploration through the class, we can find two important classes.
+
+The `k.a` uses DES encryption with a passkey that is encoded in base64. The key is located in `h.a` as a base64 encoded string. `h.b` can be found with `h.a`.
+
+Decoded strings:
+**.a** :
+`Q2FwdHVyM1RoMXM=`
+*Base64 Decoded* : `Captur3Th1s`
+**.b** :
+`e0NhcHR1cjNUaDFzVG9vfQ==`
+*Base64 Decoded* : `{Captur3Th1sToo}`
+
+Using [Cyber Chef](gchq.github.io/CyberChef/), decrypting it using the following blocks gave the output  **`{This_Isn't_Where_I_Parked_My_Car}`** :
+1. From Base64
+2. DES Decrypt
+	1. Encryption key : `Captur3T` (Since the key is 8 bytes long)
+	2. Encryption key format : UTF8
+	3. Mode : ECB
+
+## Seventh flag
+The seventh flag page is a login form with a flag input and a password input. Inspecting the activity file reveals base64 encoded strings :
+
+`VGhlIGZsYWcgaGFzaCE=` -> **`The flag hash!`**
+`MmFiOTYzOTBjN2RiZTM0MzlkZTc0ZDBjOWIwYjE3Njc=` -> ***`2ab96390c7dbe3439de74d0c9b0b1767`*** -> MD5 Crack : **`hunter2`**
+`VGhlIGZsYWcgaXMgYWxzbyBhIHBhc3N3b3JkIQ==` -> **`The flag is also a password!`**
+
+The second string contains an MD5 hash which contains the password. The flag is hidden in the string found from the previous flag. It is encrypted with **ROT47**. Decrypting it gives us a URL, calling it gives us the flag `S3V3N_11`.
+
+`9EEADi^^:?;FC652?5C@:5]7:C632D6:@]4@>^DB=:E6];D@?` -> **`https://injuredandroid.firebaseio.com/sqlite.json`**
+
+```json
+"S3V3N_11"
+```
+
+## Eighth flag
+
+
+
+## Ninth flag
+The ninth flag activity file contains a base64 encoded string which leads to an endpoint:
+`ZmxhZ3Mv` -> **`flags/`**
+
+Using the `.json` trick from the hint gives us the flag.
+`https://injuredandroid.firebaseio.com/flags.json`
+```json
+"[nine!_flag]"
+```
+
+Inserting the flag doesn't work, further inspection of the activity reveals that the string is base64 decoded after insertion. As such encoding the string works.
+`[nine!_flag]` -> **``W25pbmUhX2ZsYWdd``**
+
+## Tenth flag
