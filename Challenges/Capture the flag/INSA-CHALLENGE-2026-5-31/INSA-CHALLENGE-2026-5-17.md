@@ -116,10 +116,11 @@ The `k.a` uses DES encryption with a passkey that is encoded in base64. The key 
 Decoded strings:
 **.a** :
 `Q2FwdHVyM1RoMXM=`
-*Base64 Decoded* : `Captur3Th1s`
+-> *Base64 Decoded* : `Captur3Th1s`
+
 **.b** :
 `e0NhcHR1cjNUaDFzVG9vfQ==`
-*Base64 Decoded* : `{Captur3Th1sToo}`
+-> *Base64 Decoded* : `{Captur3Th1sToo}`
 
 Using [Cyber Chef](gchq.github.io/CyberChef/), decrypting it using the following blocks gave the output  **`{This_Isn't_Where_I_Parked_My_Car}`** :
 1. From Base64
@@ -131,14 +132,22 @@ Using [Cyber Chef](gchq.github.io/CyberChef/), decrypting it using the following
 ## Seventh flag
 The seventh flag page is a login form with a flag input and a password input. Inspecting the activity file reveals base64 encoded strings :
 
-`VGhlIGZsYWcgaGFzaCE=` -> **`The flag hash!`**
-`MmFiOTYzOTBjN2RiZTM0MzlkZTc0ZDBjOWIwYjE3Njc=` -> ***`2ab96390c7dbe3439de74d0c9b0b1767`*** -> MD5 Crack : **`hunter2`**
-`VGhlIGZsYWcgaXMgYWxzbyBhIHBhc3N3b3JkIQ==` -> **`The flag is also a password!`**
+`VGhlIGZsYWcgaGFzaCE=`
+-> **`The flag hash!`**
 
-The second string contains an MD5 hash which contains the password. The flag is hidden in the string found from the previous flag. It is encrypted with **ROT47**. Decrypting it gives us a URL, calling it gives us the flag `S3V3N_11`.
+`MmFiOTYzOTBjN2RiZTM0MzlkZTc0ZDBjOWIwYjE3Njc=`
+-> ***`2ab96390c7dbe3439de74d0c9b0b1767`***
+-> MD5 Cracked : **`hunter2`**
 
-`9EEADi^^:?;FC652?5C@:5]7:C632D6:@]4@>^DB=:E6];D@?` -> **`https://injuredandroid.firebaseio.com/sqlite.json`**
+`VGhlIGZsYWcgaXMgYWxzbyBhIHBhc3N3b3JkIQ==`
+-> **`The flag is also a password!`**
 
+The second string contains an MD5 hash which contains the password, The hash can be easily cracked to give the string **`hunter2`**. The flag is hidden in the string found from the previous flag. It is encrypted with **ROT47**. Decrypting it gives us a firebase URL, using `curl` returns us the flag `S3V3N_11`.
+
+`9EEADi^^:?;FC652?5C@:5]7:C632D6:@]4@>^DB=:E6];D@?`
+-> *ROT47* Decoded : **`https://injuredandroid.firebaseio.com/sqlite.json`**
+
+`curl https://injuredandroid.firebaseio.com/sqlite.json`
 ```json
 "S3V3N_11"
 ```
@@ -148,8 +157,10 @@ The second string contains an MD5 hash which contains the password. The flag is 
 
 
 ## Ninth flag
-The ninth flag activity file contains a base64 encoded string which leads to an endpoint:
-`ZmxhZ3Mv` -> **`flags/`**
+The ninth flag activity file contains a base64 encoded string which hints to an endpoint:
+
+`ZmxhZ3Mv`
+-> **`flags/`**
 
 Using the `.json` trick from the hint gives us the flag.
 `https://injuredandroid.firebaseio.com/flags.json`
@@ -158,6 +169,6 @@ Using the `.json` trick from the hint gives us the flag.
 ```
 
 Inserting the flag doesn't work, further inspection of the activity reveals that the string is base64 decoded after insertion. As such encoding the string works.
-`[nine!_flag]` -> **``W25pbmUhX2ZsYWdd``**
+`[nine!_flag]` -> W25pbmUhX2ZsYWdd
 
 ## Tenth flag

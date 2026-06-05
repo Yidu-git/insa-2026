@@ -28,3 +28,5 @@ ${challenges.sort(p => p.Date,'desc').map((file) => `| [[${file.file.name}]] | \
 	- [ ] Reverse Engineering
 - [!] Add more sections to Dashboard
 - [ ] ...
+
+# Challenges to do
