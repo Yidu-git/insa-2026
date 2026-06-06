@@ -218,13 +218,13 @@ ClientName_ReportType_YYYY-MM-DD_v1.0.pdf
 
 Severity ratings help stakeholders triage findings. Use the **CVSS v3.1 scale** for scored findings, or a consistent qualitative scheme when CVSS isn't applicable.
 
-| Rating | CVSS Score | Description |
-|---|---|---|
-| 🔴 **Critical** | 9.0–10.0 | Immediate exploitation likely; severe business impact |
-| 🟠 **High** | 7.0–8.9 | Significant risk; should be remediated urgently |
-| 🟡 **Medium** | 4.0–6.9 | Moderate risk; remediate in the short term |
-| 🔵 **Low** | 0.1–3.9 | Minor risk; remediate as part of regular maintenance |
-| ⚪ **Informational** | 0.0 | No direct risk; noted for awareness or best practice |
+| Rating              | CVSS Score | Description                                           |
+| ------------------- | ---------- | ----------------------------------------------------- |
+| 🔴 **Critical**     | 9.0–10.0   | Immediate exploitation likely; severe business impact |
+| 🟠 **High**         | 7.0–8.9    | Significant risk; should be remediated urgently       |
+| 🟡 **Medium**       | 4.0–6.9    | Moderate risk; remediate in the short term            |
+| 🔵 **Low**          | 0.1–3.9    | Minor risk; remediate as part of regular maintenance  |
+| ⚪ **Informational** | 0.0        | No direct risk; noted for awareness or best practice  |
 
 ### When to Use CVSS
 

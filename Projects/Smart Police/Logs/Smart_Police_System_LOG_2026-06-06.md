@@ -14,3 +14,5 @@ Topic: Project initialization
 ## Progress report
 [10:10 AM] **Project started.**
 [01:06 PM] Complete scope is yet to be assessed.
+[01:06 PM] *BREAK.*
+[01:28 PM] *END BREAK.*

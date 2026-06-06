@@ -5,7 +5,7 @@ Date: 2026-05-22
 tags:
   - THMChallenge
 ---
-# ... Challenge
+# Story Challenge
 
 | **Target**            | *Try hack me machine(room: biohazard)* |
 | --------------------- | -------------------------------------- |
