@@ -6,13 +6,13 @@ Date: 2026-05-31
 
 # Mobile security Challenge
 
-| **Target** :LiTarget:              | *Mobile application* |
-| ---------------------------------- | -------------------- |
-| Date :LiCalendar:                  | 31/5/2026            |
-| Main attack type                   | ...                  |
-| Secondary attack type              | ...                  |
-| Tools :LiToolCase: :               | JADX, GenY Motion    |
-| Criticality :RiAlarmWarningLine: : | **...**              |
+| **Target** :LiTarget:              | *Injured.apk*     |
+| ---------------------------------- | ----------------- |
+| Date :LiCalendar:                  | 31/5/2026         |
+| Main attack type                   | ...               |
+| Secondary attack type              | ...               |
+| Tools :LiToolCase: :               | JADX, GenY Motion |
+| Criticality :RiAlarmWarningLine: : | **...**           |
 
 ---
 # **RESULTS**
@@ -72,7 +72,7 @@ Date: 2026-05-31
 The app is a simple CTF with 18 flags, it includes a flag overview and and `XSSTEXT` section that reflects text inserted into the input field. This section is not used to find other flags, as stated by the text : `Fun no flag vulnerable XSS field to test payloads.`
 
 ## **Vulnerability scanning**
-...
+Application was already made to be intentionally vulnerable.
 
 ---
 # Exploiting and  Investigation
@@ -84,7 +84,7 @@ Checking the source code with JADX-GUI reveals the first flag as a string. It is
 
 ## Second flag
 The *`FLAG TWO - EXPORTED ACTIVITY`* section contains the text : 
-*There is a way to bypass the main activity and invoke other activities that are exported.*.
+"*There is a way to bypass the main activity and invoke other activities that are exported.*".
 
 This hints at a vulnerability that can be exploited through **`adb`**. Checking the `AndroidManifest.xml`, there is an activity called b25lActivity with **exported** set to **true**. Running the activity with ADB shell shows the second flag.
 
@@ -96,10 +96,10 @@ This hints at a vulnerability that can be exploited through **`adb`**. Checking 
 The third flag is similar to the first, the flag is contained in a static string with the name `cmVzb3VyY2VzX3lv`. Checking the `string.xml` file reveals the string it leads to, which contains the third flag.
 
 ## Fourth flag
-The forth flag can be found after investigating the activity, which also contains an input. This time the flag is encoded in Base64 in `g.java` or the `g` file.
+The forth flag can be found after investigating the activity, which also contains an input. This time the flag is encoded in Base64 in `g.java`.
 
 ## Fifth flag
-The fifth flag can be found by opening and closing the page repeatedly. It is intended to work by sending a broadcast repeatedly. It can also be found by inspecting the receiver, the flag is base64 encoded and encrypted however.
+The fifth flag is hidden under a broadcast receiver. The signal can be sent through `adb`, or by opening and closing the page repeatedly. The flag is revealed on the third signal.
 
 Calling the function after restarting the app works:
 ```PowerShell
@@ -107,11 +107,11 @@ Calling the function after restarting the app works:
 ```
 
 ## Sixth flag
-Flag six is another page with an input, the activity compares input with a base64 encoded and encrypted string : `k3FElEG9lnoWbOateGhj5pX6QsXRNJKh///8Jxi8KXW7iDpk2xRxhQ==`. 
+The sixth flag is encoded and encrypted using Base64 and DES. The input is compared with the encrypted string :`k3FElEG9lnoWbOateGhj5pX6QsXRNJKh///8Jxi8KXW7iDpk2xRxhQ==`
 
 The string is decoded with class `k.a()`, this is the same class that is used to decode the forth flag, Further exploration through the class, we can find two important classes.
 
-The `k.a` uses DES encryption with a passkey that is encoded in base64. The key is located in `h.a` as a base64 encoded string. `h.b` can be found with `h.a`.
+The function uses DES encryption with a passkey that is encoded in base64. The key is located in `h.a` as a base64 encoded string. `h.b` can be found with `h.a`.
 
 Decoded strings:
 **.a** :
@@ -142,18 +142,19 @@ The seventh flag page is a login form with a flag input and a password input. In
 `VGhlIGZsYWcgaXMgYWxzbyBhIHBhc3N3b3JkIQ==`
 -> **`The flag is also a password!`**
 
-The second string contains an MD5 hash which contains the password, The hash can be easily cracked to give the string **`hunter2`**. The flag is hidden in the string found from the previous flag. It is encrypted with **ROT47**. Decrypting it gives us a firebase URL, using `curl` returns us the flag `S3V3N_11`.
+The second string contains an MD5 hash which contains the password, The hash can be easily cracked to give the string **`hunter2`**. The flag is hidden in the string found from the previous flag. It is encrypted with *ROT47*. Decrypting it returns a firebase URL, using `curl` returns us the flag `S3V3N_11`.
 
 `9EEADi^^:?;FC652?5C@:5]7:C632D6:@]4@>^DB=:E6];D@?`
 -> *ROT47* Decoded : **`https://injuredandroid.firebaseio.com/sqlite.json`**
 
-`curl https://injuredandroid.firebaseio.com/sqlite.json`
+```shell
+curl https://injuredandroid.firebaseio.com/sqlite.json
+```
 ```json
 "S3V3N_11"
 ```
 
 ## Eighth flag
-
 
 
 ## Ninth flag
@@ -169,6 +170,6 @@ Using the `.json` trick from the hint gives us the flag.
 ```
 
 Inserting the flag doesn't work, further inspection of the activity reveals that the string is base64 decoded after insertion. As such encoding the string works.
-`[nine!_flag]` -> W25pbmUhX2ZsYWdd
+`[nine!_flag]` -> `W25pbmUhX2ZsYWdd`
 
 ## Tenth flag

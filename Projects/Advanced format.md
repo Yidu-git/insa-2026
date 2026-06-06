@@ -22,6 +22,7 @@ You can use this for software development, construction, research, product launc
 ## 1. Executive Summary
 *For leadership. Two to three paragraphs covering: problem statement, solution, business value, and major trade-offs.*
 
+>[!Summary]
 > **[Problem]** We are solving...
 >
 > **[Solution]** We will deliver...
@@ -34,11 +35,11 @@ You can use this for software development, construction, research, product launc
 
 ## 2. Strategic Objectives & KPIs (OKR format)
 
-| Objective | Key Result | Target | Current | Owner |
-|-----------|------------|--------|---------|-------|
-| e.g., Improve platform reliability | Reduce downtime | < 0.1% | 0.3% | [Name] |
-| | Increase user retention | 85% | 78% | [Name] |
-| | | | | |
+| Objective                          | Key Result              | Target | Current | Owner  |
+| ---------------------------------- | ----------------------- | ------ | ------- | ------ |
+| e.g., Improve platform reliability | Reduce downtime         | < 0.1% | 0.3%    | [Name] |
+|                                    | Increase user retention | 85%    | 78%     | [Name] |
+|                                    |                         |        |         |        |
 
 ---
 

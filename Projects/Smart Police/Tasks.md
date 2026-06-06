@@ -1,0 +1,5 @@
+- [ ] Start project
+- [ ] Assign team
+- [ ] Assign tasks
+- [ ] Asses scope
+- [ ] Write report
