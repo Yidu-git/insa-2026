@@ -67,7 +67,134 @@ def init_db():
     if "doc_key" in [ r[1] for r in db.execute("PRAGMA table_info(documents)").fetchall() ]: 
         db.execute( "UPDATE documents SET doc_key = 'DOC-' || printf('%03d', id) WHERE doc_key IS NULL" ) 
         db.commit() 
-        db.close() # ── Auth Helpers ──────────────────────────────────────────────────────────── def login_required(f): @wraps(f) def decorated(*args, **kwargs): if "user_id" not in session: return redirect(url_for("login")) return f(*args, **kwargs) return decorated def admin_required(f): @wraps(f) def decorated(*args, **kwargs): if session.get("role") != "admin": return ( render_template( "error.html", msg="Access Denied — Admins only.", code=403 ), 403, ) return f(*args, **kwargs) return decorated def approved_required(f): """Blocks unapproved (self-registered) users from sensitive features. Admin role is always exempt — approval only applies to regular users.""" @wraps(f) def decorated(*args, **kwargs): if not session.get("approved") and session.get("role") != "admin": return ( render_template( "restricted.html", feature=getattr(f, "__name__", "this feature") ), 403, ) return f(*args, **kwargs) return decorated # ── Middleware: hidden flag in response header ─────────────────────────────── @app.after_request def add_hidden_header(response): response.headers["X-Debug-Token"] = FLAG_HIDDEN response.headers["X-Powered-By"] = "VulnCorp-Portal/2.4.1 Flask/2.3" response.headers["Server"] = "Apache/2.4.51 (Debian)" # fake return response # ── Routes ────────────────────────────────────────────────────────────────── @app.route("/") def index(): return render_template("index.html") # robots.txt — recon flag @app.route("/robots.txt") def robots(): content = f"""User-agent: * Disallow: /admin Disallow: /api Disallow: /backup Disallow: /internal # FLAG: {FLAG_RECON} # Note: removed old /secret-panel route, but /admin-old still exists """ return app.response_class(content, mimetype="text/plain") # ── Auth ───────────────────────────────────────────────────────────────────── @app.route("/login", methods=["GET", "POST"]) def login(): error = None if request.method == "POST": username = request.form.get("username", "") password = request.form.get("password", "") password_hash = hashlib.md5(password.encode()).hexdigest() # VULN: SQLi — no parameterised query query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{password_hash}'" try: db = get_db() user = db.execute(query).fetchone() if user: if user["role"] == "admin": error = "Admin users must authenticate through the dedicated admin panel." else: session["user_id"] = user["id"] session["username"] = user["username"] session["role"] = user["role"] session["approved"] = bool(user["approved"]) if any(tok in username for tok in ["'", "--", ";"]): session["sqli_flag"] = FLAG_SQLI return redirect(url_for("dashboard")) else: error = "Invalid credentials." except Exception as e: error = f"DB Error: {e}" return render_template("login.html", error=error) @app.route("/logout") def logout(): session.clear() return redirect(url_for("index")) @app.route("/register", methods=["GET", "POST"]) def register(): error = None if request.method == "POST": username = request.form.get("username", "") password = request.form.get("password", "") email = request.form.get("email", "") db = get_db() # VULN: Second-order SQLi — stores raw username, used unsafely later in /profile/update try: pw_hash = hashlib.md5(password.encode()).hexdigest() db.execute( "INSERT INTO users (username, password, email) VALUES (?, ?, ?)", (username, pw_hash, email), ) db.commit() # Create profile uid = db.execute( "SELECT id FROM users WHERE username=?", (username,) ).fetchone()["id"] db.execute( "INSERT INTO profiles (id, bio, department, template_field) VALUES (?, '', 'General', 'Welcome')", (uid,), ) db.commit() return redirect(url_for("login")) except Exception as e: error = f"Registration error: {e}" return render_template("register.html", error=error) # ── Dashboard ───────────────────────────────────────────────────────────────── @app.route("/dashboard") @login_required def dashboard(): db = get_db() docs = db.execute( "SELECT * FROM documents WHERE owner_id=? OR is_private=0", (session["user_id"],), ).fetchall() return render_template("dashboard.html", docs=docs) # ── IDOR: /api/user/<id> ────────────────────────────────────────────────────── @app.route("/api/user/<int:uid>") @login_required def api_user(uid): # VULN: IDOR — no ownership check db = get_db() user = db.execute( "SELECT id, username, email, role, notes FROM users WHERE id=?", (uid,) ).fetchone() if not user: return jsonify({"error": "User not found"}), 404 return jsonify(dict(user)) # ── BAC: /document/<id> ─────────────────────────────────────────────────────── @app.route("/document/<string:doc_key>") @login_required def view_document(doc_key): db = get_db() # VULN: BAC — fetches any document regardless of ownership doc = db.execute("SELECT * FROM documents WHERE doc_key=?", (doc_key,)).fetchone() if not doc: return render_template("error.html", msg="Document not found.", code=404), 404 return render_template("document.html", doc=doc) # ── Stored XSS: /feedback ────────────────────────────────────────────────────── @app.route("/feedback", methods=["GET", "POST"]) @login_required @approved_required def feedback(): db = get_db() msg = None if request.method == "POST": author = session["username"] message = request.form.get("message", "") # VULN: stored XSS — message not sanitised db.execute( "INSERT INTO feedback (author, message) VALUES (?, ?)", (author, message) ) db.commit() msg = "Feedback submitted! An admin will review it shortly." entries = db.execute("SELECT * FROM feedback ORDER BY id DESC LIMIT 20").fetchall() return render_template("feedback.html", entries=entries, msg=msg) # Admin feedback review (bot visits this — XSS target) @app.route("/admin/feedback") @admin_required def admin_feedback(): db = get_db() entries = db.execute("SELECT * FROM feedback WHERE reviewed=0").fetchall() # VULN: renders raw message — XSS executes here when bot visits return render_template("admin_feedback.html", entries=entries, flag=FLAG_XSS) # ── SSTI: /profile ──────────────────────────────────────────────────────────── @app.route("/profile", methods=["GET", "POST"]) @login_required def profile(): db = get_db() uid = session["user_id"] if request.method == "POST": bio = request.form.get("bio", "") department = request.form.get("department", "") template = request.form.get("template_field", "Welcome") db.execute( "UPDATE profiles SET bio=?, department=?, template_field=? WHERE id=?", (bio, department, template, uid), ) db.commit() prof = db.execute("SELECT * FROM profiles WHERE id=?", (uid,)).fetchone() user = db.execute("SELECT * FROM users WHERE id=?", (uid,)).fetchone() if prof and prof["template_field"]: # VULN: SSTI — limited Jinja2 template rendering with file access restricted try: env = Environment(loader=FileSystemLoader(SSTI_FLAG_DIR)) tmpl = env.from_string(prof["template_field"]) rendered_greeting = tmpl.render( username=user["username"], secret="VulnCorp internal key: 4a9f2c" ) except Exception as e: rendered_greeting = f"Template error: {e}" else: rendered_greeting = f"Welcome, {user['username']}!" return render_template( "profile.html", user=user, prof=prof, greeting=rendered_greeting ) # ── File Upload ──────────────────────────────────────────────────────────────── def is_php_file(filename): return filename.lower().endswith((".php", ".phtml")) @app.route("/upload", methods=["GET", "POST"]) @login_required @approved_required def upload(): msg = None filename = None php_flag = None if request.method == "POST": f = request.files.get("file") if f: fname = secure_filename(f.filename) fpath = os.path.join(app.config["UPLOAD_FOLDER"], fname) f.save(fpath) filename = fname if is_php_file(fname): # Student proved they know dangerous extensions are accepted — # award the flag without executing the file php_flag = FLAG_UPLOAD msg = f"File '{fname}' uploaded successfully." else: msg = f"File '{fname}' uploaded successfully." return render_template("upload.html", msg=msg, filename=filename, php_flag=php_flag) # Serve uploaded files — PHP is NOT executed (intentional CTF design) # The upload challenge flag is awarded at upload time for dangerous extensions. # RCE is intentionally gated to the /internal/diagnostics vector only. @app.route("/uploads/<filename>") def uploaded_file(filename): if is_php_file(filename): # PHP execution is disabled — return a hint nudging toward the real RCE vector return ( app.response_class( "Good thinking trying to get a shell via file upload — " "but PHP execution is disabled on this server. " "The upload challenge is about demonstrating the dangerous extension bypass, " "not achieving execution here. Try another vector for RCE.", mimetype="text/plain", ), 200, ) return send_from_directory(app.config["UPLOAD_FOLDER"], filename) # ── RCE: /internal/diagnostics ──────────────────────────────────────────────── # Hardened WAF simulation — students must bypass the blocklist to achieve RCE. # Blocked: ; | & ` and common recon words to slow down enumeration. # Bypass: $() subshell, %0a newline injection, ${IFS} space bypass. # Flag is NOT in env — students must enumerate the filesystem to find it. DIAG_BLOCKLIST = [ ";", "|", "&", "`", # obvious shell metacharacters "cat", "less", "more", "head", "tail", # direct file read commands "bash", "sh", "nc", "curl", "wget", # shell / exfil tools "python", "perl", "ruby", # interpreter escapes ] def waf_check(value): """Returns the matched rule string if blocked, else None.""" lv = value.lower() for rule in DIAG_BLOCKLIST: if rule in lv: return rule return None @app.route("/internal/diagnostics", methods=["GET", "POST"]) @admin_required def diagnostics(): output = None blocked = None if request.method == "POST": host = request.form.get("host", "127.0.0.1") hit = waf_check(host) if hit: app.logger.warning( f"[WAF] Diagnostics blocked input matching rule: {hit!r} | input: {host!r}" ) blocked = True output = "Request blocked by security filter." else: try: cmd = f"ping -c 2 {host}" result = subprocess.run( cmd, shell=True, capture_output=True, text=True, timeout=5 ) raw = (result.stdout or "") + (result.stderr or "") lines = [l for l in raw.splitlines() if l.strip()] output = "\n".join(lines[-5:]) if lines else "(no output)" except subprocess.TimeoutExpired: output = "Request timed out." except Exception as e: output = str(e) return render_template("diagnostics.html", output=output, blocked=blocked) # ── Admin Panel ──────────────────────────────────────────────────────────────── @app.route("/admin") @admin_required def admin_panel(): db = get_db() users = db.execute("SELECT id, username, role, email FROM users").fetchall() return render_template("admin_panel.html", users=users) # ── Admin: approve user ─────────────────────────────────────────────────────── @app.route("/admin/approve/<int:uid>", methods=["POST"]) @admin_required def approve_user(uid): db = get_db() db.execute("UPDATE users SET approved=1 WHERE id=?", (uid,)) db.commit() return redirect(url_for("admin_panel")) @app.route("/admin/revoke/<int:uid>", methods=["POST"]) @admin_required def revoke_user(uid): db = get_db() db.execute( "UPDATE users SET approved=0 WHERE id=? AND username NOT IN ('admin','alice','bob','charlie')", (uid,), ) db.commit() return redirect(url_for("admin_panel")) # ── /admin-old (recon hint from robots.txt) ──────────────────────────────────── @app.route("/admin-old") def admin_old(): return ( render_template( "error.html", msg="This panel was decommissioned. Try /admin instead. (Nice recon work!)", code=200, ), 200, ) # ── /backup (hint at git exposure) ──────────────────────────────────────────── @app.route("/backup") def backup(): return ( render_template( "error.html", msg="Backup endpoint disabled. Check /.git/config if you think something's here.", code=403, ), 403, ) # ── API: set cookie for XSS exfil target ────────────────────────────────────── @app.route("/api/set-admin-session") def set_admin_session(): """Only called by the bot container to simulate admin browsing.""" secret = request.args.get("secret", "") if secret == os.environ.get("BOT_SECRET", "botSecret123"): resp = make_response(jsonify({"status": "ok"})) resp.set_cookie("admin_session", FLAG_XSS, httponly=False) # VULN: no httponly session["user_id"] = 1 session["username"] = "admin" session["role"] = "admin" session["approved"] = True return resp return jsonify({"error": "forbidden"}), 403 # ── XSS exfil receiver ──────────────────────────────────────────────────────── @app.route("/api/exfil") def exfil(): """Students' XSS payloads POST stolen cookies here.""" data = request.args.get("data", "") app.logger.info(f"[XSS EXFIL] {data}") # In a real challenge, students would run their own listener return "", 204 if __name__ == "__main__": init_db() app.run(host="0.0.0.0", port=5000, debug=False) # ── Second-Order SQLi: /profile/update ──────────────────────────────────────── # This route is reached after a user with a malicious username updates their profile. # The username is fetched from the DB (trusted) but used in a raw query (dangerous). @app.route("/profile/update", methods=["POST"]) @login_required def profile_update(): db = get_db() uid = session["user_id"] # Fetch username from DB — seems safe because it came from DB, not user input row = db.execute("SELECT username FROM users WHERE id=?", (uid,)).fetchone() username = row["username"] # could contain injected SQL if registered maliciously department = request.form.get("department", "General") # VULN: Second-order SQLi — username unsafely embedded in raw query try: query = f"UPDATE profiles SET department='{department}' WHERE id=(SELECT id FROM users WHERE username='{username}')" db.executescript(query) db.commit() # If username was e.g. admin'-- the query changes meaning result = db.execute("SELECT * FROM profiles WHERE id=?", (uid,)).fetchone() return jsonify( { "status": "updated", "flag": FLAG_BONUS if username and "'" in username else "no flag yet", } ) except Exception as e: return jsonify({"error": str(e)}), 400 # Ensure app initialises DB on import too with app.app_context(): try: init_db() except Exception: pass 
+        db.close() 
+# ── Auth Helpers ──────────────────────────────────────────────────────────── 
+
+def login_required(f): 
+    @wraps(f)
+    def decorated(*args, **kwargs): 
+        if "user_id" not in session: 
+            return redirect(url_for("login")) 
+        return f(*args, **kwargs) 
+    return decorated 
+
+def admin_required(f): 
+    @wraps(f) 
+    def decorated(*args, **kwargs): 
+        if session.get("role") != "admin": 
+            return ( render_template( "error.html", msg="Access Denied — Admins only.", code=403 ), 403, ) 
+        return f(*args, **kwargs) 
+    return decorated 
+
+def approved_required(f): 
+    """Blocks unapproved (self-registered) users from sensitive features.
+      Admin role is always exempt — approval only applies to regular users.""" 
+    @wraps(f) 
+    def decorated(*args, **kwargs): 
+        if not session.get("approved") and session.get("role") != "admin": 
+            return ( render_template( "restricted.html", feature=getattr(f, "__name__", "this feature") ), 403, ) 
+        return f(*args, **kwargs) 
+    return decorated 
+
+# ── Middleware: hidden flag in response header ─────────────────────────────── 
+@app.after_request
+def add_hidden_header(response): 
+    response.headers["X-Debug-Token"] = FLAG_HIDDEN
+    response.headers["X-Powered-By"] = "VulnCorp-Portal/2.4.1 Flask/2.3"
+    response.headers["Server"] = "Apache/2.4.51 (Debian)"
+
+# fake return response # ── Routes ────────────────────────────────────────────────────────────────── 
+@app.route("/") 
+def index(): return render_template("index.html") 
+# robots.txt — recon flag @app.route("/robots.txt") 
+def robots(): 
+    content = f"""User-agent: * 
+    Disallow: /admin 
+    Disallow: /api 
+    Disallow: /backup 
+    Disallow: /internal 
+    # FLAG: {FLAG_RECON} 
+    # Note: removed old /secret-panel route, but /admin-old still exists """ 
+    return app.response_class(content, mimetype="text/plain") 
+
+# ── Auth ───────────────────────────────────────────────────────────────────── 
+@app.route("/login", methods=["GET", "POST"]) 
+def login():
+    error = None 
+    if request.method == "POST": 
+        username = request.form.get("username", "") 
+        password = request.form.get("password", "") 
+        password_hash = hashlib.md5(password.encode()).hexdigest() 
+        # VULN: SQLi — no parameterised query
+        query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{password_hash}'" 
+        try: 
+            db = get_db() 
+            user = db.execute(query).fetchone() 
+            if user: 
+                if user["role"] == "admin": 
+                    error = "Admin users must authenticate through the dedicated admin panel." 
+                else: 
+                    session["user_id"] = user["id"] 
+                    session["username"] = user["username"] 
+                    session["role"] = user["role"] 
+                    session["approved"] = bool(user["approved"]) 
+            if any(tok in username for tok in ["'", "--", ";"]): 
+                session["sqli_flag"] = FLAG_SQLI 
+                return redirect(url_for("dashboard")) 
+            else: error = "Invalid credentials." 
+        except Exception as e: 
+            error = f"DB Error: {e}" 
+    return render_template("login.html", error=error)
+
+@app.route("/logout") 
+def logout(): 
+    session.clear() 
+    return redirect(url_for("index"))
+
+@app.route("/register", methods=["GET", "POST"]) 
+def register(): 
+    error = None 
+    if request.method == "POST": 
+        username = request.form.get("username", "") 
+        password = request.form.get("password", "") 
+        email = request.form.get("email", "") 
+        db = get_db() 
+        # VULN: Second-order SQLi — stores raw username, used unsafely later in /profile/update 
+        try: 
+            pw_hash = hashlib.md5(password.encode()).hexdigest() 
+            db.execute( "INSERT INTO users (username, password, email) VALUES (?, ?, ?)", (username, pw_hash, email), )
+            db.commit() 
+            # Create profile 
+            uid = db.execute( "SELECT id FROM users WHERE username=?", (username,) ).fetchone()["id"] 
+            db.execute( "INSERT INTO profiles (id, bio, department, template_field) VALUES (?, '', 'General', 'Welcome')", (uid,), ) 
+            db.commit() 
+            return redirect(url_for("login")) 
+        except Exception as e: 
+            error = f"Registration error: {e}" 
+            return render_template("register.html", error=error) 
+
+# ── Dashboard ───────────────────────────────────────────────────────────────── 
+
+@app.route("/dashboard")
+@login_required 
+def dashboard(): 
+    db = get_db() 
+    docs = db.execute( "SELECT * FROM documents WHERE owner_id=? OR is_private=0", (session["user_id"],), ).fetchall()
+    return render_template("dashboard.html", docs=docs) 
+
+
+# ── IDOR: /api/user/<id> ────────────────────────────────────────────────────── 
+@app.route("/api/user/<int:uid>") 
+@login_required 
+def api_user(uid): 
+    # VULN: IDOR — no ownership check 
+    db = get_db() 
+    user = db.execute( "SELECT id, username, email, role, notes FROM users WHERE id=?", (uid,) ).fetchone() 
+    if not user: 
+        return jsonify({"error": "User not found"}), 404 
+    return jsonify(dict(user)) 
+
+# ── BAC: /document/<id> ─────────────────────────────────────────────────────── @app.route("/document/<string:doc_key>") @login_required def view_document(doc_key): db = get_db() # VULN: BAC — fetches any document regardless of ownership doc = db.execute("SELECT * FROM documents WHERE doc_key=?", (doc_key,)).fetchone() if not doc: return render_template("error.html", msg="Document not found.", code=404), 404 return render_template("document.html", doc=doc) # ── Stored XSS: /feedback ────────────────────────────────────────────────────── @app.route("/feedback", methods=["GET", "POST"]) @login_required @approved_required def feedback(): db = get_db() msg = None if request.method == "POST": author = session["username"] message = request.form.get("message", "") # VULN: stored XSS — message not sanitised db.execute( "INSERT INTO feedback (author, message) VALUES (?, ?)", (author, message) ) db.commit() msg = "Feedback submitted! An admin will review it shortly." entries = db.execute("SELECT * FROM feedback ORDER BY id DESC LIMIT 20").fetchall() return render_template("feedback.html", entries=entries, msg=msg) # Admin feedback review (bot visits this — XSS target) @app.route("/admin/feedback") @admin_required def admin_feedback(): db = get_db() entries = db.execute("SELECT * FROM feedback WHERE reviewed=0").fetchall() # VULN: renders raw message — XSS executes here when bot visits return render_template("admin_feedback.html", entries=entries, flag=FLAG_XSS) # ── SSTI: /profile ──────────────────────────────────────────────────────────── @app.route("/profile", methods=["GET", "POST"]) @login_required def profile(): db = get_db() uid = session["user_id"] if request.method == "POST": bio = request.form.get("bio", "") department = request.form.get("department", "") template = request.form.get("template_field", "Welcome") db.execute( "UPDATE profiles SET bio=?, department=?, template_field=? WHERE id=?", (bio, department, template, uid), ) db.commit() prof = db.execute("SELECT * FROM profiles WHERE id=?", (uid,)).fetchone() user = db.execute("SELECT * FROM users WHERE id=?", (uid,)).fetchone() if prof and prof["template_field"]: # VULN: SSTI — limited Jinja2 template rendering with file access restricted try: env = Environment(loader=FileSystemLoader(SSTI_FLAG_DIR)) tmpl = env.from_string(prof["template_field"]) rendered_greeting = tmpl.render( username=user["username"], secret="VulnCorp internal key: 4a9f2c" ) except Exception as e: rendered_greeting = f"Template error: {e}" else: rendered_greeting = f"Welcome, {user['username']}!" return render_template( "profile.html", user=user, prof=prof, greeting=rendered_greeting ) # ── File Upload ──────────────────────────────────────────────────────────────── def is_php_file(filename): return filename.lower().endswith((".php", ".phtml")) @app.route("/upload", methods=["GET", "POST"]) @login_required @approved_required def upload(): msg = None filename = None php_flag = None if request.method == "POST": f = request.files.get("file") if f: fname = secure_filename(f.filename) fpath = os.path.join(app.config["UPLOAD_FOLDER"], fname) f.save(fpath) filename = fname if is_php_file(fname): # Student proved they know dangerous extensions are accepted — # award the flag without executing the file php_flag = FLAG_UPLOAD msg = f"File '{fname}' uploaded successfully." else: msg = f"File '{fname}' uploaded successfully." return render_template("upload.html", msg=msg, filename=filename, php_flag=php_flag) # Serve uploaded files — PHP is NOT executed (intentional CTF design) # The upload challenge flag is awarded at upload time for dangerous extensions. # RCE is intentionally gated to the /internal/diagnostics vector only. @app.route("/uploads/<filename>") def uploaded_file(filename): if is_php_file(filename): # PHP execution is disabled — return a hint nudging toward the real RCE vector return ( app.response_class( "Good thinking trying to get a shell via file upload — " "but PHP execution is disabled on this server. " "The upload challenge is about demonstrating the dangerous extension bypass, " "not achieving execution here. Try another vector for RCE.", mimetype="text/plain", ), 200, ) return send_from_directory(app.config["UPLOAD_FOLDER"], filename) # ── RCE: /internal/diagnostics ──────────────────────────────────────────────── # Hardened WAF simulation — students must bypass the blocklist to achieve RCE. # Blocked: ; | & ` and common recon words to slow down enumeration. # Bypass: $() subshell, %0a newline injection, ${IFS} space bypass. # Flag is NOT in env — students must enumerate the filesystem to find it. DIAG_BLOCKLIST = [ ";", "|", "&", "`", # obvious shell metacharacters "cat", "less", "more", "head", "tail", # direct file read commands "bash", "sh", "nc", "curl", "wget", # shell / exfil tools "python", "perl", "ruby", # interpreter escapes ] def waf_check(value): """Returns the matched rule string if blocked, else None.""" lv = value.lower() for rule in DIAG_BLOCKLIST: if rule in lv: return rule return None @app.route("/internal/diagnostics", methods=["GET", "POST"]) @admin_required def diagnostics(): output = None blocked = None if request.method == "POST": host = request.form.get("host", "127.0.0.1") hit = waf_check(host) if hit: app.logger.warning( f"[WAF] Diagnostics blocked input matching rule: {hit!r} | input: {host!r}" ) blocked = True output = "Request blocked by security filter." else: try: cmd = f"ping -c 2 {host}" result = subprocess.run( cmd, shell=True, capture_output=True, text=True, timeout=5 ) raw = (result.stdout or "") + (result.stderr or "") lines = [l for l in raw.splitlines() if l.strip()] output = "\n".join(lines[-5:]) if lines else "(no output)" except subprocess.TimeoutExpired: output = "Request timed out." except Exception as e: output = str(e) return render_template("diagnostics.html", output=output, blocked=blocked) # ── Admin Panel ──────────────────────────────────────────────────────────────── @app.route("/admin") @admin_required def admin_panel(): db = get_db() users = db.execute("SELECT id, username, role, email FROM users").fetchall() return render_template("admin_panel.html", users=users) # ── Admin: approve user ─────────────────────────────────────────────────────── @app.route("/admin/approve/<int:uid>", methods=["POST"]) @admin_required def approve_user(uid): db = get_db() db.execute("UPDATE users SET approved=1 WHERE id=?", (uid,)) db.commit() return redirect(url_for("admin_panel")) @app.route("/admin/revoke/<int:uid>", methods=["POST"]) @admin_required def revoke_user(uid): db = get_db() db.execute( "UPDATE users SET approved=0 WHERE id=? AND username NOT IN ('admin','alice','bob','charlie')", (uid,), ) db.commit() return redirect(url_for("admin_panel")) # ── /admin-old (recon hint from robots.txt) ──────────────────────────────────── @app.route("/admin-old") def admin_old(): return ( render_template( "error.html", msg="This panel was decommissioned. Try /admin instead. (Nice recon work!)", code=200, ), 200, ) # ── /backup (hint at git exposure) ──────────────────────────────────────────── @app.route("/backup") def backup(): return ( render_template( "error.html", msg="Backup endpoint disabled. Check /.git/config if you think something's here.", code=403, ), 403, ) # ── API: set cookie for XSS exfil target ────────────────────────────────────── @app.route("/api/set-admin-session") def set_admin_session(): """Only called by the bot container to simulate admin browsing.""" secret = request.args.get("secret", "") if secret == os.environ.get("BOT_SECRET", "botSecret123"): resp = make_response(jsonify({"status": "ok"})) resp.set_cookie("admin_session", FLAG_XSS, httponly=False) # VULN: no httponly session["user_id"] = 1 session["username"] = "admin" session["role"] = "admin" session["approved"] = True return resp return jsonify({"error": "forbidden"}), 403 # ── XSS exfil receiver ──────────────────────────────────────────────────────── @app.route("/api/exfil") def exfil(): """Students' XSS payloads POST stolen cookies here.""" data = request.args.get("data", "") app.logger.info(f"[XSS EXFIL] {data}") # In a real challenge, students would run their own listener return "", 204 if __name__ == "__main__": init_db() app.run(host="0.0.0.0", port=5000, debug=False) # ── Second-Order SQLi: /profile/update ──────────────────────────────────────── # This route is reached after a user with a malicious username updates their profile. # The username is fetched from the DB (trusted) but used in a raw query (dangerous). @app.route("/profile/update", methods=["POST"]) @login_required def profile_update(): db = get_db() uid = session["user_id"] # Fetch username from DB — seems safe because it came from DB, not user input row = db.execute("SELECT username FROM users WHERE id=?", (uid,)).fetchone() username = row["username"] # could contain injected SQL if registered maliciously department = request.form.get("department", "General") # VULN: Second-order SQLi — username unsafely embedded in raw query try: query = f"UPDATE profiles SET department='{department}' WHERE id=(SELECT id FROM users WHERE username='{username}')" db.executescript(query) db.commit() # If username was e.g. admin'-- the query changes meaning result = db.execute("SELECT * FROM profiles WHERE id=?", (uid,)).fetchone() return jsonify( { "status": "updated", "flag": FLAG_BONUS if username and "'" in username else "no flag yet", } ) except Exception as e: return jsonify({"error": str(e)}), 400 # Ensure app initialises DB on import too with app.app_context(): try: init_db() except Exception: pass 
 
 
 # The username is fetched from the DB (trusted) but used in a raw query (dangerous). 
@@ -77,18 +204,18 @@ def profile_update():
     db = get_db() 
     uid = session["user_id"] 
     # Fetch username from DB — seems safe because it came from DB, not user input 
-    row = db.execute("SELECT username FROM users WHERE id=?", (uid,)).fetchone() 
-    username = row["username"] 
-    # could contain injected SQL if registered maliciously 
-    department = request.form.get("department", "General") 
+    row = db.execute("SELECT username FROM users WHERE id=?", (uid,)).fetchone()
+    username = row["username"]
+    # could contain injected SQL if registered maliciously
+    department = request.form.get("department", "General")
 
-    # VULN: Second-order SQLi — username unsafely embedded in raw query 
-    try: 
-        query = f"UPDATE profiles SET department='{department}' WHERE id=(SELECT id FROM users WHERE username='{username}')" 
-        db.executescript(query) 
-        db.commit() 
-        # If username was e.g. admin'-- the query changes meaning 
-        result = db.execute("SELECT * FROM profiles WHERE id=?", (uid,)).fetchone() 
-        return jsonify( { "status": "updated", "flag": FLAG_BONUS if username and "'" in username else "no flag yet", } ) 
-    except Exception as e: return jsonify({"error": str(e)}), 400 
-    # Ensure app initialises DB on import too with app.app_context():  try: init_db()  except Exception: pass 
+    # VULN: Second-order SQLi — username unsafely embedded in raw query
+    try:
+        query = f"UPDATE profiles SET department='{department}' WHERE id=(SELECT id FROM users WHERE username='{username}')"
+        db.executescript(query)
+        db.commit()
+        # If username was e.g. admin'-- the query changes meaning
+        result = db.execute("SELECT * FROM profiles WHERE id=?", (uid,)).fetchone()
+        return jsonify( { "status": "updated", "flag": FLAG_BONUS if username and "'" in username else "no flag yet", } )
+    except Exception as e: return jsonify({"error": str(e)}), 400
+    # Ensure app initialises DB on import too with app.app_context():  try: init_db()  except Exception: pass

@@ -237,7 +237,6 @@ Inside is the cookie:
 .eJyrVkosKCjKL0tNUbIqKSpN1VEqys9JVbJSSkzJzcxT0lEqLU4tis8EyhpC2HmJuQjpWgC3KBVe.aiQesw.v940yot8dHBt2ET2ITiUQbhQUUQ
 ```
 Along with the flag: **`FLAG{x55_st0r3d_c00k13_st0l3n}`**
-
 ### Eighth flag - **SSTI injection**
 ![[INSA_CHALLENGE_2026_06_06_SSTI_FLAG.png]]
 The eighth flag was found in the admin profile page. Updating it with a payload in the greeting input, reveals that the server is running as **`root`**.
@@ -251,12 +250,25 @@ The flag can also be revealed with the payload:
 {% include 'ssti_flag.txt' %}
 ```
 
-## ...
+## Advanced vulnerabilities
 ### Ninth flag - **Second order SQLI**
-...
+![[SECOND_ORDER_SQLI.png]]
+The ninth flag is a slightly more complicated version of an SQLI injection, its found by registering with a username like so: **`flaguser' OR id=94) --`**
+
+This is because of the peculiar way the service updates a users profile. Since it is a second order SQLI, the username has to include a `'` while passing the update query without error. This is usually done with trail and error, but it can be done with by collecting hints about the query. In this case it was done with trial and error.
+
+>[!TIP]
+>When logging in: since the login code is vulnerable to SQL scripts, it is simply not possible to login with the username directly. To get around this hurdle, An SQLI script can be used in tandem with another proper registered account. Because of the IDOR vulnerability, logging in with the user id is possible by inserting `randuser' OR id = 91 --` as the username.
+>(Replace 91 with the registered user when reproducing)
 
 ### Tenth flag - **RCE**
-...
+![[RCE_FLAG.png]]
+Attempting to bind commands with `&`, `&&` and `|` returns no result because of the security filter. However, there is a bash command wrapper that is not filtered. using **`$(printenv)`** returns the flag.
+
+>[!Info] Why this works
+>In bash, an input can be retrieved from a command by using a wrapper like so: **`$(command)`**. In this case due to `ping` returning the attempted host when encountering an error, Using `printenv` will not return a valid host, and will return an error like:
+>`ping: OUTPUT: Name or service not known`
+
 
 ## HR Portal
 ### Eleventh flag - **NEXT.JS CVE FLAG**
