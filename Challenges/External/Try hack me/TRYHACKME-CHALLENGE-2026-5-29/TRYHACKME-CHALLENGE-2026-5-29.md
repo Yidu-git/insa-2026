@@ -44,7 +44,7 @@ OPEN PORT : 19321 NGINX
 ### NGINX rift
 
 ---
-# Exploiting and  Investigation
+# Exploiting and Investigation
 ---
 # No exploration needed.
 # Notes to be made by 1/06/2026

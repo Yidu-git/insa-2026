@@ -100,7 +100,7 @@ After switching users, we can read the second flag file.
 
 
 ---
-# Exploiting and  Investigation
+# Exploiting and Investigation
 ---
 
 ## First key

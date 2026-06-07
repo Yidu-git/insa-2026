@@ -39,7 +39,7 @@ Report finder site on port **30561**, ports *80* and *20* are closed.
 The website has a report generator that reflects user input. This can be exploited with XSS and SSTI (since its running a python server with a template engine). This is proven true when running a simple XSS payload: `<script>alert(1)</script>`.
 
 ---
-# Exploiting and  Investigation
+# Exploiting and Investigation
 ---
 
 ## SSTI

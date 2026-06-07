@@ -75,7 +75,7 @@ The app is a simple CTF with 18 flags, it includes a flag overview and and `XSST
 Application was already made to be intentionally vulnerable.
 
 ---
-# Exploiting and  Investigation
+# Exploiting and Investigation
 ---
 ## First flag
 The *`FLAG ONE - LOGIN`* section contains a single input field, this can likely be exploited through checking the source code.

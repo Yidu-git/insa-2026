@@ -74,6 +74,6 @@ sudo nmap -sS -sV 10.82.163.247 -oA scans
 Not needed (story room).
 
 ---
-# Exploiting and  Investigation
+# Exploiting and Investigation
 ---
 ## First
