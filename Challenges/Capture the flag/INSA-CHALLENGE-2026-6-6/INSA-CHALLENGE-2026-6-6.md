@@ -11,7 +11,7 @@ Date: 2026-06-06
 | ---------------------------------- | ---------------------- |
 | Date :LiCalendar:                  | 07/06/2026             |
 | Tools :LiToolCase: :               | Basic tools, Burpsuite |
-| Criticality :RiAlarmWarningLine: : | **...**                |
+| Criticality :RiAlarmWarningLine: : | **8.1**                |
 
 ---
 # **RESULTS**

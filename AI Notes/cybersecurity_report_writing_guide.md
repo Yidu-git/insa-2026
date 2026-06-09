@@ -1,5 +1,6 @@
 # Cyber Security Report Writing Guide
 
+>[!important] Classificaiton
 > **Classification:** CONFIDENTIAL — Internal Use · Not for external distribution  
 > **Version:** 1.0 · 2025
 
@@ -115,7 +116,8 @@ These are three different things. "What is the issue?" (technical description), 
 **06 — Write recommendations as commands**  
 Use imperative verbs. "Patch Apache to version 2.4.58 or later" is actionable. "Patching should be considered" is not. Include the expected outcome: "This will eliminate the known exploit path for CVE-2024-XXXX."
 
-> 💡 **Tip:** Write your executive summary after completing every other section. You cannot summarise what you haven't fully documented yet.
+>[!Tip]
+>  Write your executive summary after completing every other section. You cannot summarise what you haven't fully documented yet.
 
 ### Language: Do's and Don'ts
 
