@@ -26,7 +26,7 @@ ${challenges.sort(p => p.Date,'desc').map((file) => `| [[${file.file.name}]] | \
 	- [ ] Mobile security
 	- [ ] Web security
 	- [ ] Reverse Engineering
-- [!] Add more sections to Dashboard
+- [ ] Add more sections to Dashboard
 - [ ] ...
 
 # Challenges to do
