@@ -26,7 +26,7 @@ tags:
 ---
 # Preparation
 ---
-## Research
+## Resources
 - Resources / Information provided in-room
 
 ---
@@ -47,4 +47,4 @@ OPEN PORT : 19321 NGINX
 # Exploiting and Investigation
 ---
 # No exploration needed.
-# Notes to be made by 1/06/2026
+# Notes to be made by 20/06/2026
