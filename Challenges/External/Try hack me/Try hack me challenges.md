@@ -1,13 +1,33 @@
 ```dataviewjs
 const challenges = dv.pages("#THMChallenge");
-// const randomPage = pages[Math.floor(Math.random() * pages.length)];
-// dv.paragraph(`> "${randomPage.file.outlinks}" — **${randomPage.file.link}**`);
+
+const lastChallengeDate = challenges.sort((p) => p.file.name, 'desc').map(file => file.Date)[0]
+
+const date = lastChallengeDate.toFormat("yyyy-MM-dd")
+
+function daysSince(inputDate) {
+  const targetDate = new Date(inputDate);
+  const today = new Date();
+
+  targetDate.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+
+  const diffInMs = today - targetDate;
+  const msInDay = 1000 * 60 * 60 * 24;
+
+  return Math.floor(diffInMs / msInDay);
+}
+
+const lastChallengeDays = daysSince(date)
+
 
 dv.span(`
 | **STAT** | VAL |
 | -------- | --- |
-| Challenges logged | **${challenges.length}** |
-| Date since last challenge | ${challenges.sort((p) => p.file.name, 'desc').map(file => file.Date.toFormat("MMM dd, yyyy (yyyy/MM/dd)") )[0] } |`)
+| Challenges logged | **${"`"+challenges.length+"`"}** |
+| Days since last challenge | **${"`"+lastChallengeDays+"`"}** |
+| Date since last challenge | ${lastChallengeDate.toFormat("MMM dd, yyyy (yyyy/MM/dd)")} |
+`)
 ```
 
 # Recent Challenges
