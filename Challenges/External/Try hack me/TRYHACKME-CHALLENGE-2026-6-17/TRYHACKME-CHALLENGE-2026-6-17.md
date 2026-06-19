@@ -9,11 +9,11 @@ tags:
 
 | **Target** :LiTarget:            | *Try hack me machine(room:ignite)*     |
 | -------------------------------- | -------------------------------------- |
-| Date :LiCalendar:                | 29/5/2026                              |
+| Date :LiCalendar:                | 17/06/2026                             |
 | Main attack type                 | FUEL CMS RCE                           |
 | Secondary attack type            | ...                                    |
-| Tools :LiToolCase:               | NMAP, BurpSuite, Python                |
-| Criticality :RiAlarmWarningLine: | CVE-2026-... **9**, **Critical** - RCE |
+| Tools :LiToolCase:               | NMAP, GOBUSTER, BurpSuite, Python      |
+| Criticality :RiAlarmWarningLine: | CVE-20..-... **9**, **Critical** - RCE |
 
 ---
 # **RESULTS**
@@ -143,16 +143,16 @@ server-status        (Status: 403) [Size: 301]
 # Exploiting and Investigation
 ---
 ## Enumerating the server
-![[TARGET_PAGE_PORT_80.png]]
+![[INSA notes/Challenges/External/Try hack me/TRYHACKME-CHALLENGE-2026-6-17/Images/TARGET_PAGE_PORT_80.png]]
 When running `nmap` on the server, a webserver on port 80 was discovered. Further enumeration by visiting the server reveals the credentials to a login page plainly.
 
 User name: **admin**
 Password: **admin**
-![[TARGET_PAGE_LOGIN.png]]
+![[INSA notes/Challenges/External/Try hack me/TRYHACKME-CHALLENGE-2026-6-17/Images/TARGET_PAGE_LOGIN.png]]
 Although it states that the server uses **MySQL**, it is not important since it is not vulnerable to SQLi and there is only one user(*admin*).
 
 ## Exploring the admin panel
-![[TARGET_PAGE_ADMIN.png]]
+![[INSA notes/Challenges/External/Try hack me/TRYHACKME-CHALLENGE-2026-6-17/Images/TARGET_PAGE_ADMIN.png]]
 The admin panel does not show any particularly important vulnerabilities since Fuel CMS has other exploitable vulnerabilities of its own.
 
 ## Rooting the machine
