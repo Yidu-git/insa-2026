@@ -1,7 +1,7 @@
 ```dataviewjs
 const challenges = dv.pages("#THMChallenge");
 
-const lastChallengeDate = challenges.sort((p) => p.file.name, 'desc').map(file => file.Date)[0]
+const lastChallengeDate = challenges.sort((a,b) => a.Date > b.Date ).map(file => file.Date)[0]
 
 const date = lastChallengeDate.toFormat("yyyy-MM-dd")
 
