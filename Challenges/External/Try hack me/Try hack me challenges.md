@@ -50,3 +50,11 @@ ${challenges.sort(p => p.Date,'desc').map((file) => `| [[${file.file.name}]] | \
 - [ ] ...
 
 # Challenges to do
+- [ ] [Race track bank](https://tryhackme.com/room/racetrackbank) - Hard
+- [ ] [Polkit](https://tryhackme.com/room/polkit) - Hard
+- [ ] [Fragnista](https://tryhackme.com/room/cve202646300) - Easy
+- [ ] [Plant photographer](https://tryhackme.com/room/plantphotographer) - Hard
+- [ ] [Crack the hash](https://tryhackme.com/room/crackthehash?vercelChallengeReload=2)- Easy
+- [ ] [postX](https://tryhackme.com/room/postexploit)- Easy
+- [ ] [Google dorking](https://tryhackme.com/room/googledorking) - Easy
+- [ ] [ChrismasCTF](https://tryhackme.com/room/hc0nchristmasctf)
