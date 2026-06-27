@@ -5,7 +5,7 @@ Date: 2026-06-20
 tags:
   - THMChallenge
 ---
-# **CVE** Challenge
+# **RDP** Challenge
 
 | **Target** :LiTarget:            | *Try hack me machine(room:stuxctf)*              |
 | -------------------------------- | ------------------------------------------------ |
@@ -71,14 +71,14 @@ retro                (Status: 301) [Size: 151] [--> http://10.130.152.208/retro/
 # Exploiting and Investigation
 ---
 ## Enumerating the server
-![[TARGET_PAGE_HOME.png]]
+![[INSA notes/Challenges/External/Try hack me/TRYHACKME-CHALLENGE-2026-6-20/Images/TARGET_PAGE_HOME.png]]
 The **HTTP** server on port 80 shows a default Microsoft Windows Server page. Trying to find secret endpoints with `gobuster` and the *`directory-list-2.3-medium.txt`* wordlists shows a working endpoint:**`retro`**.
 
-![[TARGET_PAGE_BLOG_WITH_PASSWORD.png]]
+![[INSA notes/Challenges/External/Try hack me/TRYHACKME-CHALLENGE-2026-6-20/Images/TARGET_PAGE_BLOG_WITH_PASSWORD.png]]
 Looking further into the site, seems to be a blog service. Looking for any information posted early in the sites history reveals the password of a user "Wade".
 
 ## Gaining access to the server
-![[TARGET_RDP_ACCESS.png]]
+![[INSA notes/Challenges/External/Try hack me/TRYHACKME-CHALLENGE-2026-6-20/Images/TARGET_RDP_ACCESS.png]]
 
 Since port **3389** was open, it was safe to assume this was the password to the RDP service. Using the `xfreerdp` command provides a clean way to access the server.
 ```bash
@@ -87,4 +87,4 @@ xfreerdp /u:wade /v:TARGET
 The user flag was located under a *`user.txt`* file.
 
 ## Privilege escalation
-![[TARGET_RDP_ROOT_ACCESS.png]]To get the root flag, we need to get some way of exploiting the old windows system by downloading a payload (**CVE-2017-0213**). By running a temporary python server, the payload was transferred to the machine giving us access to the `Administrator` user. The root flag was located under a *`root.txt`* file in the admins desktop.
+![[INSA notes/Challenges/External/Try hack me/TRYHACKME-CHALLENGE-2026-6-20/Images/TARGET_RDP_ROOT_ACCESS.png]]To get the root flag, we need to get some way of exploiting the old windows system by downloading a payload (**CVE-2017-0213**). By running a temporary python server, the payload was transferred to the machine giving us access to the `Administrator` user. The root flag was located under a *`root.txt`* file in the admins desktop.

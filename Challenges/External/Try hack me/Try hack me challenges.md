@@ -1,11 +1,5 @@
 ```dataviewjs
-const challenges = dv.pages("#THMChallenge");
-
-const lastChallengeDate = challenges.sort((a,b) => a.Date > b.Date ).map(file => file.Date)[0]
-
-const date = lastChallengeDate.toFormat("yyyy-MM-dd")
-
-function daysSince(inputDate) {
+const daysSince = (inputDate) => {
   const targetDate = new Date(inputDate);
   const today = new Date();
 
@@ -18,13 +12,34 @@ function daysSince(inputDate) {
   return Math.floor(diffInMs / msInDay);
 }
 
+function getPagesSortedByDate(source = "", dateField = "file.mtime", direction = "desc") {
+  // 1. Fetch pages from source 
+  let pages = dv.pages(source); 
+  // 2. Resolve nested fields like 'file.mtime' dynamically 
+  const getNestedValue = (obj, path) => path.split('.').reduce((acc, part) => acc && acc[part], obj); 
+  // 3. Sort and return 
+  
+  return pages.sort(p => getNestedValue(p, dateField), direction); 
+}
+
+const print = (str) => {
+  dv.span(str)
+}
+
+// const Challenges = dv.pages("#THMChallenge").sort((a,b) => a.Date < b.Date )
+const Challenges = getPagesSortedByDate("#THMChallenge")
+
+
+const lastChallengeDate = Challenges.map(file => file.Date)[0]
+const date = lastChallengeDate.toFormat("yyyy-MM-dd")
 const lastChallengeDays = daysSince(date)
 
+// print(Challenges.map(file => file.Date.toFormat("yyyy-MM-dd") + " " + file.file.name))
 
 dv.span(`
 | **STAT** | VAL |
 | -------- | --- |
-| Challenges logged | **${"`"+challenges.length+"`"}** |
+| Challenges logged | **${"`"+Challenges.length+"`"}** |
 | Days since last challenge | **${"`"+lastChallengeDays+"`"}** |
 | Date since last challenge | ${lastChallengeDate.toFormat("MMM dd, yyyy (yyyy/MM/dd)")} |
 `)
@@ -53,8 +68,8 @@ ${challenges.sort(p => p.Date,'desc').map((file) => `| [[${file.file.name}]] | \
 - [ ] [Race track bank](https://tryhackme.com/room/racetrackbank) - Hard
 - [ ] [Polkit](https://tryhackme.com/room/polkit) - Hard
 - [ ] [Fragnista](https://tryhackme.com/room/cve202646300) - Easy
-- [ ] [Plant photographer](https://tryhackme.com/room/plantphotographer) - Hard
+- [x] [Plant photographer](https://tryhackme.com/room/plantphotographer) - Hard
 - [ ] [Crack the hash](https://tryhackme.com/room/crackthehash?vercelChallengeReload=2)- Easy
 - [ ] [postX](https://tryhackme.com/room/postexploit)- Easy
 - [ ] [Google dorking](https://tryhackme.com/room/googledorking) - Easy
-- [ ] [ChrismasCTF](https://tryhackme.com/room/hc0nchristmasctf)
+- [ ] [ChrismasCTF](https://tryhackme.com/room/hc0nchristmasctf) - Hard

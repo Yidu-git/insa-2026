@@ -5,7 +5,7 @@ Date: 2026-06-19
 tags:
   - THMChallenge
 ---
-# **CVE** Challenge
+# **THM** Challenge
 
 | **Target** :LiTarget:            | *Try hack me machine(room:stuxctf)* |
 | -------------------------------- | ----------------------------------- |
