@@ -1,4 +1,4 @@
 - [WebSockets in 100 Seconds & Beyond with Socket.io](https://www.youtube.com/watch?v=1BfCnjr_Vjg)
 - [Why Every Developer Needs to Understand WebSockets - Nova Designs](https://www.youtube.com/watch?v=dBkhlWUQVNc&t=442s)
 - [Socket.IO V4 Docs](https://socket.io/docs/v4/)
-- 
+- [Student Burnout: A Review on Factors Contributing to Burnout Across Different Student Populations](https://www.mdpi.com/2076-328X/15/2/170)

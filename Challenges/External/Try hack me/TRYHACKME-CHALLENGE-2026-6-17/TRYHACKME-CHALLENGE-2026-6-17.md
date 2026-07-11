@@ -184,12 +184,3 @@ $db['default'] = array(
 	'save_queries' => TRUE
 );
 ```
-%% 
-## Other findings:
-### Robots.txt
-```
-User-agent: *
-Disallow: /fuel/
-```
-**`/fuel/`** redirects to the login page.
- %%
