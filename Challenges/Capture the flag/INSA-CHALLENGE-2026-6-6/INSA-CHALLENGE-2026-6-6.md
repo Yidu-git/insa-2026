@@ -109,7 +109,7 @@ register             (Status: 200) [Size: 1694]
 robots.txt           (Status: 200) [Size: 191]
 upload               (Status: 302) [Size: 199] [--> /login]
 ```
-**Port 3000**
+#### **Port 3000**
 ```
 cgi-bin/             (Status: 308) [Size: 8] [--> /cgi-bin]
 dashboard            (Status: 307) [Size: 6] [--> /login]
@@ -201,6 +201,7 @@ After registration, the dashboard page informs the user that the profile is stor
   "username": "charlie"
 }
 ```
+No other approved users exist.
 
 The second user has third flag `FLAG{1d0r_ch4mp_acc3ss_d3n13d_lol}`. All users all have normal permissions, picking one and using SQLI to login to their account is trivial.
 
@@ -232,7 +233,7 @@ Decoded:
 ```
 admin_session=FLAG{x55_st0r3d_c00k13_st0l3n}; session=.eJyrVkosKCjKL0tNUbIqKSpN1VEqys9JVbJSSkzJzcxT0lEqLU4tis8EyhpC2HmJuQjpWgC3KBVe.aiQgHA.i6hK5xWe0vvHpqmkOfgAtWKkaXQ
 ```
-Inside is the cookie:
+Inside the session parameter is the admin cookie:
 ```
 .eJyrVkosKCjKL0tNUbIqKSpN1VEqys9JVbJSSkzJzcxT0lEqLU4tis8EyhpC2HmJuQjpWgC3KBVe.aiQesw.v940yot8dHBt2ET2ITiUQbhQUUQ
 ```
@@ -249,6 +250,9 @@ The flag can also be revealed with the payload:
 ```python
 {% include 'ssti_flag.txt' %}
 ```
+
+>[!Note]
+>The intended way to find the flag was with the second payload. This method is now patched.
 
 ## Advanced vulnerabilities
 ### Ninth flag - **Second order SQLI**
